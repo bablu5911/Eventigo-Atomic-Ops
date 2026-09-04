@@ -34,29 +34,31 @@ export default function Navbar() {
   return (
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        scrolled ? 'bg-brand-cream/90 backdrop-blur-md shadow-sm border-b border-brand-dark/10' : 'bg-transparent'
+        scrolled ? 'bg-neutral-950/85 backdrop-blur-md shadow-lg border-b border-white/10' : 'bg-transparent'
       }`}
     >
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
         <div className="relative flex items-center justify-between h-16 md:h-20">
           
           {/* Logo & Brand */}
-          <Link to="/" className="flex items-center space-x-2 group">
-            <Triangle className="w-5 h-5 text-brand-dark fill-brand-dark group-hover:scale-110 transition-transform" />
-            <span className="text-xl font-bold tracking-tight text-brand-dark font-helvetica-neue uppercase">
-              Atomic Ops
+          <Link to="/" className="flex items-center space-x-2.5 group">
+            <div className="w-8 h-8 rounded-xl bg-emerald-500 flex items-center justify-center text-neutral-950 font-black text-lg shadow-md shadow-emerald-500/30 group-hover:scale-105 transition-transform">
+              E
+            </div>
+            <span className="text-2xl font-extrabold tracking-tight text-white font-helvetica-neue">
+              Eventigo
             </span>
           </Link>
 
           {/* Navigation Links based on User Role */}
-          <nav className="hidden md:flex items-center space-x-4 text-sm font-medium font-helvetica-neue">
+          <nav className="hidden md:flex items-center space-x-3 text-sm font-medium font-helvetica-neue">
             <Link
               to="/"
               className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-full transition-colors ${
-                isActive('/') ? 'text-brand-dark font-bold bg-white/80 border border-brand-dark/15' : 'text-brand-dark/70 hover:text-brand-dark'
+                isActive('/') ? 'text-emerald-400 font-bold bg-white/10 border border-emerald-500/30 shadow-sm' : 'text-slate-300 hover:text-white hover:bg-white/5'
               }`}
             >
-              <Calendar className="w-4 h-4 text-brand-green" />
+              <Calendar className="w-4 h-4 text-emerald-400" />
               <span>Events</span>
             </Link>
 
@@ -64,10 +66,10 @@ export default function Navbar() {
               <Link
                 to="/my-bookings"
                 className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-full transition-colors ${
-                  isActive('/my-bookings') ? 'text-brand-dark font-bold bg-white/80 border border-brand-dark/15' : 'text-brand-dark/70 hover:text-brand-dark'
+                  isActive('/my-bookings') ? 'text-emerald-400 font-bold bg-white/10 border border-emerald-500/30 shadow-sm' : 'text-slate-300 hover:text-white hover:bg-white/5'
                 }`}
               >
-                <Ticket className="w-4 h-4 text-brand-green" />
+                <Ticket className="w-4 h-4 text-emerald-400" />
                 <span>My Bookings</span>
               </Link>
             )}
@@ -76,23 +78,23 @@ export default function Navbar() {
               <Link
                 to="/organizer"
                 className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-full transition-colors ${
-                  isActive('/organizer') ? 'text-brand-dark font-bold bg-white/80 border border-brand-dark/15' : 'text-brand-dark/70 hover:text-brand-dark'
+                  isActive('/organizer') ? 'text-emerald-400 font-bold bg-white/10 border border-emerald-500/30 shadow-sm' : 'text-slate-300 hover:text-white hover:bg-white/5'
                 }`}
               >
-                <Cpu className="w-4 h-4 text-brand-green" />
+                <Cpu className="w-4 h-4 text-emerald-400" />
                 <span>Organizer Studio</span>
               </Link>
             )}
 
             {(user?.role === 'staff' || user?.role === 'organizer' || user?.role === 'admin') && (
               <Link
-                to="/door-checker"
+                to="/door-scanner"
                 className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-full transition-colors ${
-                  isActive('/door-checker') ? 'text-brand-dark font-bold bg-white/80 border border-brand-dark/15' : 'text-brand-dark/70 hover:text-brand-dark'
+                  isActive('/door-scanner') ? 'text-emerald-400 font-bold bg-white/10 border border-emerald-500/30 shadow-sm' : 'text-slate-300 hover:text-white hover:bg-white/5'
                 }`}
               >
-                <QrCode className="w-4 h-4 text-brand-green" />
-                <span>Door Scanner</span>
+                <QrCode className="w-4 h-4 text-emerald-400" />
+                <span>Live Scanner</span>
               </Link>
             )}
 
@@ -100,10 +102,10 @@ export default function Navbar() {
               <Link
                 to="/superadmin"
                 className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-full transition-colors ${
-                  isActive('/superadmin') ? 'text-amber-900 font-bold bg-amber-100 border border-amber-300 shadow-sm' : 'text-amber-800 hover:text-amber-900 hover:bg-amber-50'
+                  isActive('/superadmin') ? 'text-amber-300 font-bold bg-amber-500/20 border border-amber-500/40 shadow-sm' : 'text-amber-300/80 hover:text-amber-200 hover:bg-amber-500/10'
                 }`}
               >
-                <Crown className="w-4 h-4 text-amber-600" />
+                <Crown className="w-4 h-4 text-amber-400" />
                 <span>Venue Financials</span>
               </Link>
             )}
@@ -112,10 +114,10 @@ export default function Navbar() {
               <Link
                 to="/admin"
                 className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-full transition-colors ${
-                  isActive('/admin') ? 'text-purple-900 font-bold bg-purple-50 border border-purple-200 shadow-sm' : 'text-brand-dark/70 hover:text-purple-900'
+                  isActive('/admin') ? 'text-purple-300 font-bold bg-purple-500/20 border border-purple-500/40 shadow-sm' : 'text-purple-300/80 hover:text-purple-200 hover:bg-purple-500/10'
                 }`}
               >
-                <Shield className="w-4 h-4 text-purple-700" />
+                <Shield className="w-4 h-4 text-purple-400" />
                 <span>Operations & Staff</span>
               </Link>
             )}
@@ -124,10 +126,10 @@ export default function Navbar() {
               <Link
                 to="/chat"
                 className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-full transition-colors ${
-                  isActive('/chat') ? 'text-brand-dark font-bold bg-white/80 border border-brand-dark/15' : 'text-brand-dark/70 hover:text-brand-dark'
+                  isActive('/chat') ? 'text-emerald-400 font-bold bg-white/10 border border-emerald-500/30 shadow-sm' : 'text-slate-300 hover:text-white hover:bg-white/5'
                 }`}
               >
-                <MessageSquare className="w-4 h-4 text-brand-green" />
+                <MessageSquare className="w-4 h-4 text-emerald-400" />
                 <span>Team Chat</span>
               </Link>
             )}
@@ -138,7 +140,7 @@ export default function Navbar() {
             {/* Direct Create Event Quick Action */}
             <Link
               to="/organizer"
-              className="flex items-center space-x-1.5 px-4 py-2 rounded-full bg-brand-dark hover:bg-brand-green text-white font-bold text-xs uppercase tracking-wider transition-all shadow-sm active:scale-95"
+              className="flex items-center space-x-1.5 px-4 py-2 rounded-full bg-emerald-500 hover:bg-emerald-400 text-neutral-950 font-bold text-xs uppercase tracking-wider transition-all shadow-md shadow-emerald-500/20 active:scale-95"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>Create Event</span>
@@ -148,20 +150,20 @@ export default function Navbar() {
               <div className="flex items-center space-x-2">
                 <Link
                   to="/profile"
-                  className="flex items-center space-x-2 px-4 py-2 rounded-full bg-white/80 border border-brand-dark/15 hover:border-brand-dark/30 transition-colors shadow-sm"
+                  className="flex items-center space-x-2 px-4 py-2 rounded-full bg-neutral-900/90 border border-white/10 hover:border-emerald-500/40 transition-colors shadow-sm"
                 >
-                  <UserIcon className="w-4 h-4 text-brand-green" />
-                  <span className="text-xs font-semibold text-brand-dark">{user.name.split(' ')[0]}</span>
+                  <UserIcon className="w-4 h-4 text-emerald-400" />
+                  <span className="text-xs font-semibold text-slate-200">{user.name.split(' ')[0]}</span>
                   <span className={`text-[10px] uppercase font-mono px-2 py-0.5 rounded-full font-bold ${
                     user.role === 'superadmin'
-                      ? 'bg-amber-100 text-amber-900 border border-amber-300'
+                      ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
                       : user.role === 'admin'
-                      ? 'bg-purple-100 text-purple-800'
+                      ? 'bg-purple-500/20 text-purple-300 border border-purple-500/40'
                       : user.role === 'organizer'
-                      ? 'bg-emerald-100 text-emerald-800'
+                      ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
                       : user.role === 'staff'
-                      ? 'bg-cyan-100 text-cyan-800'
-                      : 'bg-brand-dark/10 text-brand-dark'
+                      ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40'
+                      : 'bg-white/10 text-slate-300'
                   }`}>
                     {user.role}
                   </span>
@@ -173,7 +175,7 @@ export default function Navbar() {
                     navigate('/login');
                   }}
                   title="Logout"
-                  className="p-2 text-brand-dark/60 hover:text-rose-600 hover:bg-rose-50 rounded-full transition-colors"
+                  className="p-2 text-slate-400 hover:text-rose-400 hover:bg-rose-950/30 rounded-full transition-colors"
                 >
                   <LogOut className="w-4 h-4" />
                 </button>
@@ -182,14 +184,14 @@ export default function Navbar() {
               <div className="flex items-center space-x-3">
                 <Link
                   to="/login"
-                  className="flex items-center space-x-1 px-4 py-2 text-sm font-semibold text-brand-dark hover:opacity-70 transition-opacity uppercase tracking-wide"
+                  className="flex items-center space-x-1 px-4 py-2 text-sm font-semibold text-slate-300 hover:text-white transition-colors uppercase tracking-wide"
                 >
                   <LogIn className="w-4 h-4" />
                   <span>Login</span>
                 </Link>
                 <Link
                   to="/register"
-                  className="flex items-center space-x-1 px-5 py-2.5 text-sm font-semibold bg-brand-dark text-white rounded-full hover:bg-brand-green transition-colors shadow-sm uppercase tracking-wide"
+                  className="flex items-center space-x-1 px-5 py-2.5 text-sm font-semibold bg-emerald-500 hover:bg-emerald-400 text-neutral-950 rounded-full transition-all shadow-md shadow-emerald-500/20 uppercase tracking-wide"
                 >
                   <UserPlus className="w-4 h-4" />
                   <span>Register</span>
@@ -206,12 +208,12 @@ export default function Navbar() {
             aria-label="Toggle menu"
           >
             <span
-              className={`w-6 h-[2px] bg-brand-dark rounded absolute transition-all duration-300 ease-[cubic-bezier(0.68,-0.6,0.32,1.6)] ${
+              className={`w-6 h-[2px] bg-white rounded absolute transition-all duration-300 ease-[cubic-bezier(0.68,-0.6,0.32,1.6)] ${
                 mobileOpen ? 'top-[19px] rotate-45' : 'top-[14px]'
               }`}
             />
             <span
-              className={`w-6 h-[2px] bg-brand-dark rounded absolute transition-all duration-300 ease-[cubic-bezier(0.68,-0.6,0.32,1.6)] ${
+              className={`w-6 h-[2px] bg-white rounded absolute transition-all duration-300 ease-[cubic-bezier(0.68,-0.6,0.32,1.6)] ${
                 mobileOpen ? 'top-[19px] -rotate-45' : 'top-[22px]'
               }`}
             />
@@ -221,7 +223,7 @@ export default function Navbar() {
 
       {/* Mobile overlay */}
       <div
-        className={`md:hidden fixed inset-0 bg-brand-cream z-40 transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+        className={`md:hidden fixed inset-0 bg-neutral-950/95 backdrop-blur-xl z-40 transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
           mobileOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
         }`}
       >
@@ -230,41 +232,41 @@ export default function Navbar() {
             mobileOpen ? 'translate-y-0 opacity-100' : '-translate-y-8 opacity-0'
           }`}
         >
-          <Link to="/" onClick={closeMobileMenu} className="text-xl font-bold text-brand-dark">
+          <Link to="/" onClick={closeMobileMenu} className="text-xl font-bold text-white">
             Events
           </Link>
           {user && (
-            <Link to="/my-bookings" onClick={closeMobileMenu} className="text-xl font-bold text-brand-dark">
+            <Link to="/my-bookings" onClick={closeMobileMenu} className="text-xl font-bold text-white">
               My Bookings
             </Link>
           )}
-          <Link to="/organizer" onClick={closeMobileMenu} className="text-xl font-bold text-brand-green flex items-center space-x-2">
+          <Link to="/organizer" onClick={closeMobileMenu} className="text-xl font-bold text-emerald-400 flex items-center space-x-2">
             <Plus className="w-5 h-5" />
             <span>Create Event</span>
           </Link>
           {user && (
-            <Link to="/organizer" onClick={closeMobileMenu} className="text-xl font-bold text-brand-dark">
+            <Link to="/organizer" onClick={closeMobileMenu} className="text-xl font-bold text-white">
               Organizer Studio
             </Link>
           )}
           {(user?.role === 'staff' || user?.role === 'organizer' || user?.role === 'admin' || user?.role === 'superadmin') && (
-            <Link to="/door-checker" onClick={closeMobileMenu} className="text-xl font-bold text-brand-dark">
-              Door Scanner
+            <Link to="/door-scanner" onClick={closeMobileMenu} className="text-xl font-bold text-white">
+              Live Scanner
             </Link>
           )}
           {user?.role === 'superadmin' && (
-            <Link to="/superadmin" onClick={closeMobileMenu} className="text-xl font-bold text-amber-700 flex items-center space-x-2">
-              <Crown className="w-5 h-5" />
+            <Link to="/superadmin" onClick={closeMobileMenu} className="text-xl font-bold text-amber-300 flex items-center space-x-2">
+              <Crown className="w-5 h-5 text-amber-400" />
               <span>Venue Financials</span>
             </Link>
           )}
           {(user?.role === 'admin' || user?.role === 'superadmin') && (
-            <Link to="/admin" onClick={closeMobileMenu} className="text-xl font-bold text-purple-700">
+            <Link to="/admin" onClick={closeMobileMenu} className="text-xl font-bold text-purple-300">
               Operations & Staff
             </Link>
           )}
           {(user?.role === 'staff' || user?.role === 'organizer' || user?.role === 'admin' || user?.role === 'superadmin') && (
-            <Link to="/chat" onClick={closeMobileMenu} className="text-xl font-bold text-brand-dark">
+            <Link to="/chat" onClick={closeMobileMenu} className="text-xl font-bold text-white">
               Team Chat
             </Link>
           )}
@@ -275,7 +277,7 @@ export default function Navbar() {
                 <Link
                   to="/profile"
                   onClick={closeMobileMenu}
-                  className="w-full text-center py-3 bg-white border border-brand-dark/20 text-brand-dark font-bold rounded-full text-sm"
+                  className="w-full text-center py-3 bg-neutral-900 border border-white/10 text-white font-bold rounded-full text-sm"
                 >
                   My Profile ({user.role})
                 </Link>
@@ -285,7 +287,7 @@ export default function Navbar() {
                     logout();
                     navigate('/login');
                   }}
-                  className="w-full text-center py-3 bg-rose-600 text-white font-bold rounded-full text-sm"
+                  className="w-full text-center py-3 bg-rose-600 hover:bg-rose-500 text-white font-bold rounded-full text-sm"
                 >
                   Logout
                 </button>
@@ -295,14 +297,14 @@ export default function Navbar() {
                 <Link
                   to="/login"
                   onClick={closeMobileMenu}
-                  className="w-full text-center py-3 bg-white border border-brand-dark/20 text-brand-dark font-bold rounded-full text-sm"
+                  className="w-full text-center py-3 bg-neutral-900 border border-white/10 text-white font-bold rounded-full text-sm"
                 >
                   Login
                 </Link>
                 <Link
                   to="/register"
                   onClick={closeMobileMenu}
-                  className="w-full text-center py-3 bg-brand-dark text-white font-bold rounded-full text-sm"
+                  className="w-full text-center py-3 bg-emerald-500 hover:bg-emerald-400 text-neutral-950 font-bold rounded-full text-sm"
                 >
                   Register
                 </Link>

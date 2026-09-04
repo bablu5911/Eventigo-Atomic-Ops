@@ -48,11 +48,11 @@ export default function RegisterPage() {
   return (
     <div className="max-w-md mx-auto py-16 px-4 space-y-6 font-helvetica-neue">
       <div className="text-center space-y-3">
-        <div className="w-12 h-12 rounded-full bg-brand-cream border border-brand-dark/15 flex items-center justify-center mx-auto text-brand-dark shadow-sm">
-          <Triangle className="w-6 h-6 fill-brand-dark" />
+        <div className="w-12 h-12 rounded-2xl bg-brand-green flex items-center justify-center mx-auto text-brand-cream font-bold text-2xl shadow-sm">
+          E
         </div>
-        <h1 className="text-3xl font-bold text-brand-dark uppercase tracking-tight">Create Account</h1>
-        <p className="text-xs text-brand-dark/60 font-mono">Join Atomic Ops as an attendee or event organizer</p>
+        <h1 className="text-3xl font-extrabold text-brand-dark tracking-tight">Create Account</h1>
+        <p className="text-xs text-brand-dark/60 font-medium">Join Eventigo as an attendee or event organizer</p>
       </div>
 
       <div className="bg-white/80 backdrop-blur-md border border-brand-dark/10 p-6 rounded-3xl space-y-4 shadow-sm">

@@ -458,10 +458,10 @@ export default function ThermalTicketPrinter({ booking, onFinish, onClose }) {
                   }`}
                 >
                   <div className="font-extrabold tracking-widest text-xs uppercase text-[#111111]">
-                    ✦ ATOMIC OPS TICKETING ✦
+                    ✦ EVENTIGO TICKETING ✦
                   </div>
                   <div className="text-[9px] text-[#444] tracking-wider uppercase mt-0.5">
-                    HIGH-CONCURRENCY ACCESS PASS
+                    VERIFIED ACCESS PASS
                   </div>
                 </div>
 
@@ -601,7 +601,7 @@ export default function ThermalTicketPrinter({ booking, onFinish, onClose }) {
                     Valid for single entry. Present at gate scanner.
                   </div>
                   <div className="text-[8px] text-[#777]">
-                    Atomic Ops Distributed Architecture • Anti-Counterfeit Locked
+                    Eventigo Verified Platform • Anti-Counterfeit Locked
                   </div>
                 </div>
               </div>

@@ -19,10 +19,12 @@ import {
   Check,
   ChevronRight
 } from 'lucide-react';
+import ThreeDPass from './ThreeDPass';
 
 export default function QRModal({ isOpen, onClose, booking }) {
   const [copied, setCopied] = useState(false);
   const [activeTab, setActiveTab] = useState('master');
+  const [passFormat, setPassFormat] = useState('qr'); // 'qr' | '3d'
   const [selectedSubTicket, setSelectedSubTicket] = useState(null);
   const [copiedSubId, setCopiedSubId] = useState('');
 
@@ -261,12 +263,12 @@ export default function QRModal({ isOpen, onClose, booking }) {
             {/* Top Brand & Security Header */}
             <div className="flex items-center justify-between border-b border-brand-dark/10 pb-3">
               <div className="flex items-center space-x-2">
-                <div className="w-6 h-6 rounded-full bg-brand-dark text-white flex items-center justify-center shadow-sm">
-                  <Triangle className="w-3.5 h-3.5 fill-current" />
+                <div className="w-6 h-6 rounded-lg bg-brand-green text-brand-cream flex items-center justify-center font-bold text-xs shadow-sm">
+                  E
                 </div>
                 <div>
-                  <span className="font-bold text-xs uppercase tracking-widest text-brand-dark block">ATOMIC OPS PASS</span>
-                  <span className="text-[9px] font-mono text-brand-dark/50 block tracking-tight">HIGH-CONCURRENCY TICKETING ENGINE</span>
+                  <span className="font-bold text-xs uppercase tracking-widest text-brand-dark block">EVENTIGO PASS</span>
+                  <span className="text-[9px] font-mono text-brand-dark/50 block tracking-tight">VERIFIED DIGITAL ENTRY TICKET</span>
                 </div>
               </div>
 
@@ -312,42 +314,83 @@ export default function QRModal({ isOpen, onClose, booking }) {
               </div>
             </div>
 
-            {/* QR Code Container with High-Security Border */}
-            <div className="p-5 bg-white rounded-3xl border-2 border-brand-dark/15 flex flex-col items-center justify-center relative shadow-sm mx-auto w-full max-w-[280px]">
-              <div className="relative group">
-                <img
-                  src={resolvedQrUrl}
-                  alt="Ticket QR Code"
-                  className="w-52 h-52 object-contain rounded-xl p-1 bg-white"
-                  onError={(e) => {
-                    if (e.target.src !== fallbackQrUrl) {
-                      e.target.src = fallbackQrUrl;
-                    }
-                  }}
-                />
-                <div className="absolute inset-0 border border-brand-dark/10 rounded-xl pointer-events-none" />
-              </div>
+            {/* 2D QR vs 3D Hologram Toggle Pill */}
+            <div className="flex items-center justify-center p-1 bg-brand-cream/80 border border-brand-dark/15 rounded-2xl w-fit mx-auto text-xs font-mono">
+              <button
+                type="button"
+                onClick={() => setPassFormat('qr')}
+                className={`px-4 py-1.5 rounded-xl font-bold transition-all flex items-center space-x-1.5 ${
+                  passFormat === 'qr'
+                    ? 'bg-brand-dark text-white shadow-sm'
+                    : 'text-brand-dark/70 hover:text-brand-dark'
+                }`}
+              >
+                <QrCode className="w-3.5 h-3.5" />
+                <span>2D QR Pass</span>
+              </button>
 
-              {/* Structured Pass ID with Copy Button */}
-              <div className="mt-3 flex items-center space-x-1.5 w-full justify-center">
-                <button
-                  onClick={handleCopyPassCode}
-                  className="flex items-center space-x-1.5 bg-brand-dark hover:bg-brand-green text-white text-[11px] font-mono font-bold px-4 py-1.5 rounded-full tracking-widest uppercase transition-colors shadow-sm"
-                  title="Click to copy Pass ID"
-                >
-                  <span>{booking.bookingCode}</span>
-                  <Copy className="w-3 h-3 opacity-80" />
-                </button>
-              </div>
-              {copied && <span className="text-[10px] text-emerald-600 font-mono mt-1">Copied to clipboard!</span>}
-
-              {/* Simulated Barcode Stripes */}
-              <div className="mt-3 w-full flex items-center justify-center space-x-[2px] opacity-70">
-                {[4, 2, 6, 1, 3, 5, 2, 7, 3, 1, 4, 6, 2, 3, 5, 1, 4, 2, 7, 3, 5, 2, 4, 1, 6, 3, 2].map((h, i) => (
-                  <div key={i} className="bg-brand-dark rounded-sm" style={{ width: `${(i % 3) + 1.5}px`, height: '18px' }} />
-                ))}
-              </div>
+              <button
+                type="button"
+                onClick={() => setPassFormat('3d')}
+                className={`px-4 py-1.5 rounded-xl font-bold transition-all flex items-center space-x-1.5 ${
+                  passFormat === '3d'
+                    ? 'bg-brand-green text-white shadow-sm'
+                    : 'text-brand-dark/70 hover:text-brand-dark'
+                }`}
+              >
+                <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+                <span>3D Hologram</span>
+              </button>
             </div>
+
+            {passFormat === '3d' ? (
+              <div className="py-2">
+                <ThreeDPass
+                  bookingCode={booking.bookingCode}
+                  eventTitle={booking.event?.title}
+                  tierName={booking.tickets?.[0]?.nameSnapshot || 'VIP Pass'}
+                  attendeeName={booking.user?.name || 'Attendee'}
+                  isAdmitted={booking.status === 'scanned_invalid' || booking.checkedInCount > 0}
+                />
+              </div>
+            ) : (
+              /* QR Code Container with High-Security Border */
+              <div className="p-5 bg-white rounded-3xl border-2 border-brand-dark/15 flex flex-col items-center justify-center relative shadow-sm mx-auto w-full max-w-[280px]">
+                <div className="relative group">
+                  <img
+                    src={resolvedQrUrl}
+                    alt="Ticket QR Code"
+                    className="w-52 h-52 object-contain rounded-xl p-1 bg-white"
+                    onError={(e) => {
+                      if (e.target.src !== fallbackQrUrl) {
+                        e.target.src = fallbackQrUrl;
+                      }
+                    }}
+                  />
+                  <div className="absolute inset-0 border border-brand-dark/10 rounded-xl pointer-events-none" />
+                </div>
+
+                {/* Structured Pass ID with Copy Button */}
+                <div className="mt-3 flex items-center space-x-1.5 w-full justify-center">
+                  <button
+                    onClick={handleCopyPassCode}
+                    className="flex items-center space-x-1.5 bg-brand-dark hover:bg-brand-green text-white text-[11px] font-mono font-bold px-4 py-1.5 rounded-full tracking-widest uppercase transition-colors shadow-sm"
+                    title="Click to copy Pass ID"
+                  >
+                    <span>{booking.bookingCode}</span>
+                    <Copy className="w-3 h-3 opacity-80" />
+                  </button>
+                </div>
+                {copied && <span className="text-[10px] text-emerald-600 font-mono mt-1">Copied to clipboard!</span>}
+
+                {/* Simulated Barcode Stripes */}
+                <div className="mt-3 w-full flex items-center justify-center space-x-[2px] opacity-70">
+                  {[4, 2, 6, 1, 3, 5, 2, 7, 3, 1, 4, 6, 2, 3, 5, 1, 4, 2, 7, 3, 5, 2, 4, 1, 6, 3, 2].map((h, i) => (
+                    <div key={i} className="bg-brand-dark rounded-sm" style={{ width: `${(i % 3) + 1.5}px`, height: '18px' }} />
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Gate Access & Security Digest */}
             <div className="grid grid-cols-2 gap-3 text-left font-mono text-xs">

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, CreditCard, ShieldCheck, Lock, Smartphone, Building2, CheckCircle2, RefreshCw, AlertCircle, ArrowRight, Zap, Sparkles } from 'lucide-react';
+import confetti from 'canvas-confetti';
 
 export default function PaymentModal({ isOpen, onClose, event, selectedTickets, promoCode, promoDiscount = 0, onPaymentSuccess, isProcessing }) {
   const [paymentMode, setPaymentMode] = useState('card'); // card | upi | express | netbanking
@@ -58,6 +59,29 @@ export default function PaymentModal({ isOpen, onClose, event, selectedTickets, 
 
     setTimeout(() => {
       setStage('authorized');
+      try {
+        confetti({
+          particleCount: 110,
+          spread: 80,
+          origin: { y: 0.6 },
+          colors: ['#10b981', '#34d399', '#fbbf24', '#60a5fa', '#f43f5e']
+        });
+        setTimeout(() => {
+          confetti({
+            particleCount: 50,
+            angle: 60,
+            spread: 55,
+            origin: { x: 0, y: 0.65 }
+          });
+          confetti({
+            particleCount: 50,
+            angle: 120,
+            spread: 55,
+            origin: { x: 1, y: 0.65 }
+          });
+        }, 250);
+      } catch (e) {}
+
       setTimeout(() => {
         setStage('idle');
         onPaymentSuccess({
@@ -82,7 +106,7 @@ export default function PaymentModal({ isOpen, onClose, event, selectedTickets, 
               <Lock className="w-4 h-4 text-emerald-400" />
             </div>
             <div>
-              <h3 className="text-base font-bold text-brand-dark uppercase tracking-tight">Atomic Secure Checkout</h3>
+              <h3 className="text-base font-bold text-brand-dark uppercase tracking-tight">Eventigo Secure Checkout</h3>
               <div className="flex items-center space-x-2 text-[10px] font-mono text-brand-dark/50">
                 <span className="flex items-center space-x-1 text-emerald-600 font-bold">
                   <ShieldCheck className="w-3 h-3" />
@@ -209,7 +233,7 @@ export default function PaymentModal({ isOpen, onClose, event, selectedTickets, 
                     {/* Contactless symbol */}
                     <span className="text-[10px] font-mono tracking-widest text-slate-400">)))</span>
                   </div>
-                  <span className="font-bold text-xs uppercase font-mono tracking-wider text-emerald-400">Atomic Shield</span>
+                  <span className="font-bold text-xs uppercase font-mono tracking-wider text-emerald-400">Eventigo Shield</span>
                 </div>
 
                 <div className="font-mono text-lg sm:text-xl tracking-widest text-slate-100 font-semibold text-center drop-shadow-sm">
@@ -294,7 +318,7 @@ export default function PaymentModal({ isOpen, onClose, event, selectedTickets, 
               <div className="p-3 bg-brand-cream rounded-2xl border border-brand-dark/10 w-fit mx-auto shadow-sm">
                 <img
                   src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(
-                    `upi://pay?pa=atomicops@upi&pn=Atomic%20Ops&am=${grandTotal}&cu=USD`
+                    `upi://pay?pa=eventigo@upi&pn=Eventigo&am=${grandTotal}&cu=USD`
                   )}`}
                   alt="UPI QR Code"
                   className="w-44 h-44 object-contain rounded-xl"
@@ -383,10 +407,10 @@ export default function PaymentModal({ isOpen, onClose, event, selectedTickets, 
                 <span className="text-xs font-bold uppercase tracking-wider">
                   {stage === 'processing'
                     ? 'Processing with 3D-Secure Network...'
-                    : 'Authorized! Minting Atomic Pass...'}
+                    : 'Authorized! Generating Eventigo Pass...'}
                 </span>
               </div>
-              <p className="text-[10px] text-slate-400">Locking inventory atomicity • Guaranteeing zero double-allocation</p>
+              <p className="text-[10px] text-slate-400">Securing ticket reservation • Verified Checkout</p>
             </div>
           )}
 

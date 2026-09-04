@@ -16,8 +16,47 @@ body {
   font-family: 'Helvetica Neue Light', Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #faf8f5;
-  color: #2d3a2e;
+  background-color: #070a08;
+  color: #f3f4f6;
+}
+
+/* Aceternity-Style Dark Modern Mesh & Radial Gradients */
+.dark-canvas-bg {
+  background-color: #070a08;
+  background-image: 
+    radial-gradient(ellipse 80% 60% at 50% -15%, rgba(16, 185, 129, 0.18), transparent 70%),
+    radial-gradient(ellipse 60% 50% at 50% 115%, rgba(5, 150, 105, 0.12), transparent 70%),
+    radial-gradient(circle at 15% 50%, rgba(16, 185, 129, 0.05), transparent 40%),
+    radial-gradient(circle at 85% 50%, rgba(59, 130, 246, 0.04), transparent 40%);
+  background-attachment: fixed;
+}
+
+.aceternity-card {
+  background: rgba(16, 23, 19, 0.72);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5), 0 0 30px -12px rgba(16, 185, 129, 0.12);
+}
+
+.aceternity-glow-hover {
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.aceternity-glow-hover:hover {
+  border-color: rgba(52, 211, 153, 0.45);
+  box-shadow: 0 12px 35px -8px rgba(0, 0, 0, 0.6), 0 0 35px -6px rgba(16, 185, 129, 0.25);
+}
+
+/* 3D Holographic Card Shimmer */
+@keyframes holographic-shine {
+  0% { transform: translateX(-150%) rotate(35deg); opacity: 0; }
+  50% { opacity: 0.6; }
+  100% { transform: translateX(250%) rotate(35deg); opacity: 0; }
+}
+
+.animate-hologram-shine {
+  animation: holographic-shine 3.5s infinite ease-in-out;
 }
 
 @keyframes fade-up {
@@ -39,3 +78,4 @@ body {
 .stagger-4 { animation-delay: 360ms; }
 .stagger-5 { animation-delay: 480ms; }
 .stagger-6 { animation-delay: 600ms; }
+

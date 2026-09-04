@@ -8,6 +8,7 @@ import SkeletonDetail from '../components/SkeletonDetail';
 import QRModal from '../components/QRModal';
 import ThermalTicketPrinter from '../components/ThermalTicketPrinter';
 import PaymentModal from '../components/PaymentModal';
+import confetti from 'canvas-confetti';
 import { Calendar, MapPin, Ticket, ShieldCheck, Plus, Minus, AlertCircle, Lock, Sparkles, Gift } from 'lucide-react';
 
 export default function EventDetailPage() {
@@ -127,6 +128,13 @@ export default function EventDetailPage() {
       {
         onSuccess: (responseData) => {
           toast.success('Payment authorized & Booking confirmed!');
+          try {
+            confetti({
+              particleCount: 100,
+              spread: 70,
+              origin: { y: 0.6 }
+            });
+          } catch (e) {}
           setPaymentModalOpen(false);
           const freshBooking = responseData.booking || responseData;
           if (responseData.qrCodeUrl) freshBooking.qrCodeUrl = responseData.qrCodeUrl;

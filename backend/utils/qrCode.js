@@ -19,4 +19,8 @@ const generateQRCode = async (payload) => {
   }
 };
 
-module.exports = { generateQRCode };
+const generateTicketQR = async (bookingCode) => {
+  return generateQRCode(bookingCode);
+};
+
+module.exports = { generateQRCode, generateTicketQR };

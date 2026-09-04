@@ -70,6 +70,19 @@ const processEarlyExit = async (req, res) => {
   });
 };
 
+const verifyTicketCheckIn = async (req, res) => {
+  const { code, eventId } = req.body;
+  const result = await bookingService.verifyAndCheckInTicket({
+    code,
+    eventId,
+    guardId: req.user.id
+  });
+  res.status(200).json({
+    success: true,
+    ...result
+  });
+};
+
 module.exports = {
   createBooking,
   getUserBookings,
@@ -77,5 +90,6 @@ module.exports = {
   downloadTicketPDF,
   cancelBooking,
   verifyCheckIn,
+  verifyTicketCheckIn,
   processEarlyExit
 };

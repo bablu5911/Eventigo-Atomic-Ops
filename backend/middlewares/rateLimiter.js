@@ -13,7 +13,7 @@ const apiLimiter = rateLimit({
 
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 30, // Limit auth attempts
+  max: process.env.NODE_ENV === 'production' ? 50 : 500, // Limit auth attempts safely in prod, allow testing in dev
   standardHeaders: true,
   legacyHeaders: false,
   message: {

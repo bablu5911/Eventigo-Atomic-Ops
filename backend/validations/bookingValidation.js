@@ -36,8 +36,16 @@ const earlyExitSchema = {
   })
 };
 
+const verifyTicketSchema = {
+  body: Joi.object().keys({
+    code: Joi.string().required().trim(),
+    eventId: Joi.string().required().trim()
+  })
+};
+
 module.exports = {
   createBookingSchema,
   checkInSchema,
-  earlyExitSchema
+  earlyExitSchema,
+  verifyTicketSchema
 };

@@ -165,6 +165,7 @@ class BookingService {
         promoCode: matchedPromo ? matchedPromo.code : '',
         discountAmount,
         status: 'confirmed',
+        attendedAt: null,
         qrCodeUrl,
         securityHash,
         gateEntry,
@@ -692,6 +693,133 @@ class BookingService {
       maxTicketsApplicable: guestsExitingNow,
       couponCode: generatedCouponCode,
       message: `Early exit verified! ${guestsExitingNow} guest(s) exited ${minutesEarly} mins early. Credited ${discountPercent}% discount coupon [${generatedCouponCode}] for up to ${guestsExitingNow} ticket(s) to attendee account!`
+    };
+  }
+
+  async verifyAndCheckInTicket({ code, eventId, guardId }) {
+    // 1. Check Super Admin Emergency Gate Lockdown
+    if (superadminService && superadminService.isEmergencyGateLockdownActive()) {
+      throw new ApiError(423, 'EMERGENCY_GATE_LOCKDOWN: Venue turnstiles locked by Super Admin.');
+    }
+
+    if (!code || !eventId) {
+      throw new ApiError(400, 'Ticket code and event ID are required.');
+    }
+
+    const cleanCode = code.trim();
+    const cleanEventId = eventId.trim();
+
+    // 2. Query booking by bookingCode, _id, or individualTickets.ticketCode
+    const queryConditions = [
+      { bookingCode: cleanCode },
+      { 'individualTickets.ticketCode': cleanCode }
+    ];
+
+    if (mongoose.Types.ObjectId.isValid(cleanCode)) {
+      queryConditions.push({ _id: cleanCode });
+    }
+
+    const booking = await Booking.findOne({ $or: queryConditions })
+      .populate('user', 'name email role')
+      .populate('event', 'title startDateTime eventId');
+
+    if (!booking) {
+      throw new ApiError(404, 'INVALID_TICKET: No confirmed booking found.');
+    }
+
+    if (booking.status === 'cancelled' || booking.status === 'refunded') {
+      throw new ApiError(400, `INVALID_TICKET: Booking is ${booking.status}.`);
+    }
+
+    // 3. Verify Event Match
+    const bookingEventId = booking.event?._id?.toString() || booking.event?.toString();
+    const bookingCustomEventId = booking.event?.eventId;
+
+    const isMatch = bookingEventId === cleanEventId || (bookingCustomEventId && bookingCustomEventId === cleanEventId);
+    if (!isMatch) {
+      throw new ApiError(400, 'WRONG_EVENT: Ticket is for a different event.');
+    }
+
+    // 4. Check if already attended
+    if (booking.attendedAt) {
+      return {
+        status: 'ALREADY_USED',
+        message: 'Access Denied: Ticket was already scanned.',
+        scannedAt: booking.attendedAt,
+        attendee: {
+          name: booking.user?.name || 'Attendee',
+          email: booking.user?.email || ''
+        },
+        bookingCode: booking.bookingCode,
+        event: {
+          title: booking.event?.title || '',
+          id: booking.event?._id
+        }
+      };
+    }
+
+    // 5. Atomic check-in
+    const totalCount = booking.totalTicketsCount || (booking.tickets ? booking.tickets.reduce((acc, t) => acc + (t.quantity || 1), 0) : 1);
+    const now = new Date();
+
+    const verifiedBooking = await Booking.findOneAndUpdate(
+      {
+        _id: booking._id,
+        status: { $in: ['confirmed', 'partially_checked_in'] }
+      },
+      {
+        $set: {
+          attendedAt: now,
+          checkedInCount: totalCount
+        },
+        $push: {
+          checkInLogs: {
+            admittedCount: totalCount,
+            admittedAt: now,
+            gate: 'Main Gate Live Scanner',
+            note: `Verified by guard ${guardId || 'staff'}`
+          }
+        }
+      },
+      { new: true }
+    )
+      .populate('user', 'name email role')
+      .populate('event', 'title startDateTime eventId');
+
+    // If concurrency race occurred and another process scanned it first
+    if (!verifiedBooking) {
+      const refreshedBooking = await Booking.findById(booking._id).populate('user', 'name email');
+      return {
+        status: 'ALREADY_USED',
+        message: 'Access Denied: Ticket was already scanned.',
+        scannedAt: refreshedBooking.attendedAt || now,
+        attendee: {
+          name: refreshedBooking.user?.name || 'Attendee',
+          email: refreshedBooking.user?.email || ''
+        },
+        bookingCode: refreshedBooking.bookingCode,
+        event: {
+          title: booking.event?.title || '',
+          id: booking.event?._id
+        }
+      };
+    }
+
+    return {
+      status: 'VALID',
+      message: 'Access Granted: Welcome!',
+      scannedAt: verifiedBooking.attendedAt,
+      attendee: {
+        name: verifiedBooking.user?.name || 'Attendee',
+        email: verifiedBooking.user?.email || ''
+      },
+      tickets: verifiedBooking.tickets || [],
+      totalTickets: totalCount,
+      bookingCode: verifiedBooking.bookingCode,
+      event: {
+        title: verifiedBooking.event?.title || '',
+        id: verifiedBooking.event?._id
+      }
     };
   }
 }

@@ -160,7 +160,7 @@ class EventService {
       throw new ApiError(404, 'Event not found');
     }
 
-    if (userRole !== 'admin' && event.organizer.toString() !== userId.toString()) {
+    if (userRole !== 'admin' && userRole !== 'superadmin' && event.organizer.toString() !== userId.toString()) {
       throw new ApiError(403, 'Not authorized to update this event');
     }
 
@@ -184,7 +184,7 @@ class EventService {
       throw new ApiError(404, 'Event not found');
     }
 
-    if (userRole !== 'admin' && event.organizer.toString() !== userId.toString()) {
+    if (userRole !== 'admin' && userRole !== 'superadmin' && event.organizer.toString() !== userId.toString()) {
       throw new ApiError(403, 'Not authorized to delete this event');
     }
 

@@ -25,6 +25,10 @@ const auth = async (req, res, next) => {
       return next(new ApiError(401, 'User not found or token invalid'));
     }
 
+    if (user.status === 'suspended') {
+      return next(new ApiError(403, 'Account suspended. Please contact venue administration.'));
+    }
+
     req.user = user;
     next();
   } catch (error) {

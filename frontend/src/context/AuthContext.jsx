@@ -94,6 +94,28 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const loginWithGoogle = async (idToken) => {
+    setError(null);
+    try {
+      const res = await api.post('/auth/google', { idToken });
+      const token = res.data?.data?.accessToken || res.data?.token;
+      const userData = res.data?.data?.user || res.data?.user;
+      if (token && userData) {
+        setAccessToken(token);
+        setUser(userData);
+        return { success: true, user: userData };
+      }
+      return { success: false, error: 'Failed to extract user payload' };
+    } catch (err) {
+      const msg =
+        err.response?.data?.error ||
+        err.response?.data?.message ||
+        'Google authentication failed';
+      setError(msg);
+      return { success: false, error: msg };
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -102,6 +124,7 @@ export const AuthProvider = ({ children }) => {
         error,
         login,
         register,
+        loginWithGoogle,
         logout,
         quickSwitchRole,
         checkLoggedIn

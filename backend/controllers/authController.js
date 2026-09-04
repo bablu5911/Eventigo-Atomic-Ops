@@ -33,13 +33,49 @@ const login = async (req, res) => {
 };
 
 const googleLogin = async (req, res) => {
-  const { email, name, credential, idToken, accessToken, avatar } = req.body;
+  const { idToken, credential, accessToken, email, name, avatar } = req.body;
+  const tokenToVerify = idToken || credential;
+
+  if (tokenToVerify) {
+    const userDoc = await authService.verifyAndLoginGoogle(tokenToVerify);
+    const newAccessToken = authService.generateAccessToken(userDoc._id);
+    const newRefreshToken = authService.generateRefreshToken(userDoc._id);
+    setRefreshTokenCookie(res, newRefreshToken);
+
+    const userPayload = {
+      id: userDoc._id,
+      name: userDoc.name,
+      email: userDoc.email,
+      role: userDoc.role,
+      status: userDoc.status,
+      provider: userDoc.provider || 'google',
+      providerId: userDoc.providerId,
+      avatar: userDoc.avatar || ''
+    };
+
+    return res.status(200).json({
+      success: true,
+      message: 'Google authentication successful',
+      token: newAccessToken,
+      user: userPayload,
+      data: {
+        user: userPayload,
+        accessToken: newAccessToken
+      }
+    });
+  }
+
   const result = await authService.googleLogin({ email, name, credential, idToken, accessToken, avatar });
   setRefreshTokenCookie(res, result.refreshToken);
   res.status(200).json({
     success: true,
+    message: 'Google authentication successful',
     token: result.accessToken,
-    user: result.user
+    user: result.user,
+    data: {
+      user: result.user,
+      accessToken: result.accessToken
+    }
   });
 };
 

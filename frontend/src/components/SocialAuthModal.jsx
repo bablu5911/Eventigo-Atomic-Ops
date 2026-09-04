@@ -128,7 +128,7 @@ export default function SocialAuthModal({ isOpen, onClose, provider = 'google', 
   const handleRealGoogleLogin = async (credential) => {
     setLoading(true);
     try {
-      const res = await api.post('/auth/google', { credential });
+      const res = await api.post('/auth/google', { idToken: credential, credential });
       if (res.data.success) {
         setAccessToken(res.data.token);
         await checkLoggedIn();

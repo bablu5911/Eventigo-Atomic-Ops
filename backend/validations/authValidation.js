@@ -44,11 +44,22 @@ const resetPasswordSchema = {
   })
 };
 
+const googleAuthSchema = {
+  body: Joi.object().keys({
+    idToken: Joi.string().required(),
+    credential: Joi.string().allow('', null),
+    email: Joi.string().email().allow('', null),
+    name: Joi.string().allow('', null),
+    avatar: Joi.string().allow('', null)
+  }).unknown(true)
+};
+
 module.exports = {
   registerSchema,
   loginSchema,
   updateProfileSchema,
   updatePasswordSchema,
   forgotPasswordSchema,
-  resetPasswordSchema
+  resetPasswordSchema,
+  googleAuthSchema
 };

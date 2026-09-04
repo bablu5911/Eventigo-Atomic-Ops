@@ -11,9 +11,11 @@ const registerSchema = {
 
 const loginSchema = {
   body: Joi.object().keys({
-    email: Joi.string().required().email().lowercase().trim(),
+    email: Joi.string().trim(),
+    username: Joi.string().trim(),
+    identifier: Joi.string().trim(),
     password: Joi.string().required()
-  })
+  }).or('email', 'username', 'identifier')
 };
 
 const updateProfileSchema = {

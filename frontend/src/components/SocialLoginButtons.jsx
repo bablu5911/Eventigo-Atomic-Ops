@@ -21,12 +21,20 @@ export default function SocialLoginButtons({ onLoginSuccess }) {
 
       const res = await api.post('/auth/google', { idToken });
 
+      if (typeof res.data === 'string' && res.data.includes('<!doctype html>')) {
+        toast.error('API endpoint returned HTML. Ensure VITE_API_URL is configured to point to your live backend.');
+        return;
+      }
+
       const token = res.data?.data?.accessToken || res.data?.token;
       const user = res.data?.data?.user || res.data?.user;
 
-      if (token) {
-        setAccessToken(token);
+      if (!token) {
+        toast.error(res.data?.message || res.data?.error || 'Authentication failed: no session token returned from backend.');
+        return;
       }
+
+      setAccessToken(token);
       await checkLoggedIn();
 
       toast.success(`Logged in with Google! Welcome ${user?.name || 'Attendee'}`);

@@ -11,7 +11,7 @@ import SocialLoginButtons from '../components/SocialLoginButtons';
 import { Triangle, LogIn, Key, Mail, ShieldCheck, ArrowRight } from 'lucide-react';
 
 const loginSchema = z.object({
-  email: z.string().email('Invalid email address'),
+  email: z.string().min(1, 'Email or User ID is required'),
   password: z.string().min(1, 'Password is required')
 });
 
@@ -41,14 +41,33 @@ export default function LoginPage() {
     setLoading(true);
     try {
       const res = await api.post('/auth/login', { email: data.email, password: data.password });
+
+      if (typeof res.data === 'string' && res.data.includes('<!doctype html>')) {
+        toast.error('API endpoint returned HTML. Ensure VITE_API_URL is configured to point to your live backend.');
+        return;
+      }
+
       if (res.data.requires2FA) {
         setStep2FA(true);
         setTempToken(res.data.tempToken);
         setUserEmail(res.data.email);
         toast.success('Credentials verified. Please enter 6-digit OTP code.');
+      } else if (res.data.token || res.data?.data?.accessToken) {
+        const token = res.data.token || res.data?.data?.accessToken;
+        const user = res.data.user || res.data?.data?.user;
+        setAccessToken(token);
+        await checkLoggedIn();
+        toast.success(`Authenticated successfully as ${user?.name || 'User'} (${user?.role?.toUpperCase() || ''})`);
+
+        // Redirect based on role
+        if (user?.role === 'superadmin') navigate('/superadmin');
+        else if (user?.role === 'admin') navigate('/admin');
+        else if (user?.role === 'organizer') navigate('/organizer');
+        else if (user?.role === 'staff') navigate('/door-checker');
+        else navigate(from, { replace: true });
       }
     } catch (err) {
-      toast.error(err.response?.data?.error || 'Invalid login credentials');
+      toast.error(err.response?.data?.error || err.response?.data?.message || 'Invalid login credentials');
     } finally {
       setLoading(false);
     }
@@ -116,18 +135,18 @@ export default function LoginPage() {
 
           <div className="flex items-center space-x-3 text-[11px] font-mono text-brand-dark/40 uppercase">
             <span className="flex-1 h-[1px] bg-brand-dark/10" />
-            <span>or sign in with email</span>
+            <span>or sign in with ID / email</span>
             <span className="flex-1 h-[1px] bg-brand-dark/10" />
           </div>
 
           <form onSubmit={handleSubmit(onLoginSubmit)} className="space-y-4 text-xs">
             <div className="space-y-1.5">
-              <label className="text-brand-dark font-semibold block">Email Address</label>
+              <label className="text-brand-dark font-semibold block">Email or User ID</label>
               <div className="relative">
                 <Mail className="w-4 h-4 text-brand-dark/40 absolute left-3.5 top-3" />
                 <input
-                  type="email"
-                  placeholder="name@atomicops.com"
+                  type="text"
+                  placeholder="superadmin1, admin1, organizer1, staff1, user1"
                   {...register('email')}
                   className="w-full bg-brand-cream border border-brand-dark/10 rounded-2xl pl-10 pr-4 py-2.5 text-brand-dark placeholder-brand-dark/40 focus:outline-none focus:border-brand-dark/40 font-mono"
                 />
@@ -158,94 +177,6 @@ export default function LoginPage() {
               <span>{loading ? 'Authenticating...' : 'Sign In'}</span>
             </button>
           </form>
-
-          {/* Interactive Preset Credentials */}
-          <div className="bg-brand-cream p-4 rounded-2xl border border-brand-dark/10 text-[11px] space-y-2 font-mono">
-            <span className="text-brand-dark/60 font-bold block uppercase tracking-wider text-[10px]">
-              1-Click Demo Logins (Click to Autofill)
-            </span>
-            <div className="grid grid-cols-1 gap-1.5">
-              <button
-                type="button"
-                onClick={() => {
-                  setValue('email', 'superadmin@atomicops.com');
-                  setValue('password', 'Password123!');
-                  toast.success('Loaded Super Admin (Venue Owner/CFO) credentials');
-                }}
-                className="w-full text-left p-2 rounded-xl bg-amber-50 hover:bg-amber-100/80 border border-amber-200/60 flex items-center justify-between transition-colors"
-              >
-                <div>
-                  <span className="font-bold text-amber-900 block">👑 Super Admin (Venue Owner & CFO)</span>
-                  <span className="text-[10px] text-amber-800/70">superadmin@atomicops.com</span>
-                </div>
-                <span className="text-[10px] font-bold text-amber-700 uppercase">Autofill</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  setValue('email', 'admin@atomicops.com');
-                  setValue('password', 'Password123!');
-                  toast.success('Loaded Admin (Operations & Staff Mgr) credentials');
-                }}
-                className="w-full text-left p-2 rounded-xl bg-purple-50 hover:bg-purple-100/80 border border-purple-200/60 flex items-center justify-between transition-colors"
-              >
-                <div>
-                  <span className="font-bold text-purple-900 block">🛡️ Admin (Events, Ticket & Staff Mgr)</span>
-                  <span className="text-[10px] text-purple-800/70">admin@atomicops.com</span>
-                </div>
-                <span className="text-[10px] font-bold text-purple-700 uppercase">Autofill</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  setValue('email', 'organizer@atomicops.com');
-                  setValue('password', 'Password123!');
-                  toast.success('Loaded Organizer credentials');
-                }}
-                className="w-full text-left p-2 rounded-xl bg-emerald-50 hover:bg-emerald-100/80 border border-emerald-200/60 flex items-center justify-between transition-colors"
-              >
-                <div>
-                  <span className="font-bold text-emerald-900 block">⚡ Organizer (Assigned Event Host)</span>
-                  <span className="text-[10px] text-emerald-800/70">organizer@atomicops.com</span>
-                </div>
-                <span className="text-[10px] font-bold text-emerald-700 uppercase">Autofill</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  setValue('email', 'staff@atomicops.com');
-                  setValue('password', 'Password123!');
-                  toast.success('Loaded Door Staff credentials');
-                }}
-                className="w-full text-left p-2 rounded-xl bg-cyan-50 hover:bg-cyan-100/80 border border-cyan-200/60 flex items-center justify-between transition-colors"
-              >
-                <div>
-                  <span className="font-bold text-cyan-900 block">🚪 Door Staff (Gate Check-in Guard)</span>
-                  <span className="text-[10px] text-cyan-800/70">staff@atomicops.com</span>
-                </div>
-                <span className="text-[10px] font-bold text-cyan-700 uppercase">Autofill</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  setValue('email', 'attendee@atomicops.com');
-                  setValue('password', 'Password123!');
-                  toast.success('Loaded Attendee credentials');
-                }}
-                className="w-full text-left p-2 rounded-xl bg-white hover:bg-slate-50 border border-brand-dark/15 flex items-center justify-between transition-colors"
-              >
-                <div>
-                  <span className="font-bold text-brand-dark block">🎟️ Attendee (Ticket Buyer & Attendee)</span>
-                  <span className="text-[10px] text-brand-dark/60">attendee@atomicops.com</span>
-                </div>
-                <span className="text-[10px] font-bold text-brand-dark uppercase">Autofill</span>
-              </button>
-            </div>
-          </div>
 
           <div className="text-center pt-2 border-t border-brand-dark/10 text-xs text-brand-dark/60">
             Don't have an account?{' '}

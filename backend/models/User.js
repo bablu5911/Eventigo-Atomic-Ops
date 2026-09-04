@@ -9,6 +9,12 @@ const userSchema = new mongoose.Schema(
       required: [true, 'Name is required'],
       trim: true
     },
+    username: {
+      type: String,
+      trim: true,
+      lowercase: true,
+      sparse: true
+    },
     email: {
       type: String,
       required: [true, 'Email is required'],
@@ -21,7 +27,7 @@ const userSchema = new mongoose.Schema(
       required: function () {
         return (this.provider || this.authProvider || 'local') === 'local';
       },
-      minlength: 6,
+      minlength: 3,
       select: false
     },
     role: {

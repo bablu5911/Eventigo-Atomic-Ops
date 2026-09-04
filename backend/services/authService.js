@@ -43,25 +43,28 @@ class AuthService {
     }
 
     const { OAuth2Client } = require('google-auth-library');
-    const clientId =
-      process.env.GOOGLE_CLIENT_ID ||
-      '790000714862-prdjahaobp66g82reflvp6khposp3246.apps.googleusercontent.com';
-    const client = new OAuth2Client(clientId);
+    const defaultClientId = '790000714862-prdjahaobp66g82reflvp6khposp3246.apps.googleusercontent.com';
+    const client = new OAuth2Client();
 
     let payload = null;
+
+    const validAudiences = [
+      process.env.GOOGLE_CLIENT_ID,
+      defaultClientId
+    ].filter(Boolean);
 
     try {
       const ticket = await client.verifyIdToken({
         idToken,
-        audience: clientId
+        audience: validAudiences.length === 1 ? validAudiences[0] : validAudiences
       });
       payload = ticket.getPayload();
     } catch (err) {
-      // Fallback verification via Google's tokeninfo API
+      // Fallback verification via Google's official tokeninfo API
       try {
         const response = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(idToken)}`);
         const data = await response.json();
-        if (response.ok && !data.error) {
+        if (response.ok && !data.error && data.email) {
           payload = data;
         } else {
           if (idToken.startsWith('mock-google-') || idToken.startsWith('test-google-')) {
@@ -86,7 +89,7 @@ class AuthService {
             picture: ''
           };
         } else {
-          throw new ApiError(401, `Google ID Token Verification Failed: ${err.message}`);
+          throw new ApiError(401, `Google ID Token Verification Failed: ${fallbackErr.message || err.message}`);
         }
       }
     }
@@ -168,10 +171,23 @@ class AuthService {
     };
   }
 
-  async login(email, password) {
-    const user = await User.findOne({ email }).select('+password +twoFactorCode +twoFactorExpires');
+  async login(identifier, password) {
+    if (!identifier) {
+      throw new ApiError(400, 'Email or User ID is required');
+    }
+
+    const cleanId = String(identifier).toLowerCase().trim();
+    const user = await User.findOne({
+      $or: [
+        { email: cleanId },
+        { username: cleanId },
+        { email: `${cleanId}@eventigo.com` },
+        { email: `${cleanId}@atomicops.com` }
+      ]
+    }).select('+password +twoFactorCode +twoFactorExpires');
+
     if (!user || !(await user.matchPassword(password))) {
-      throw new ApiError(401, 'Invalid email or password credentials');
+      throw new ApiError(401, 'Invalid email/ID or password credentials');
     }
 
     if (user.status === 'suspended') {
@@ -182,19 +198,41 @@ class AuthService {
       throw new ApiError(403, 'Your account is temporarily on hold. Please contact Administration.');
     }
 
+    // High privilege management portals require 2FA verification challenge
+    const isPrivileged2FARole = ['superadmin', 'admin'].includes(user.role);
+
     const otp = '123456';
     user.twoFactorCode = otp;
     user.twoFactorExpires = new Date(Date.now() + 5 * 60 * 1000);
     await user.save();
 
-    const tempToken = generateTemp2FAToken(user._id);
+    if (isPrivileged2FARole) {
+      const tempToken = generateTemp2FAToken(user._id);
+      return {
+        requires2FA: true,
+        tempToken,
+        email: user.email,
+        role: user.role,
+        message: '2FA OTP Verification Code Sent (Demo OTP: 123456)'
+      };
+    }
+
+    // Direct access for attendee (user1), staff (staff1), and organizer (organizer1)
+    const accessToken = generateAccessToken(user._id);
+    const refreshToken = generateRefreshToken(user._id);
 
     return {
-      requires2FA: true,
-      tempToken,
-      email: user.email,
-      role: user.role,
-      message: '2FA OTP Verification Code Sent (Demo OTP: 123456)'
+      requires2FA: false,
+      accessToken,
+      refreshToken,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        username: user.username,
+        role: user.role,
+        status: user.status
+      }
     };
   }
 

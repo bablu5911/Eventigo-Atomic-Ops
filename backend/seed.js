@@ -39,56 +39,71 @@ const seedData = async (skipConnect = false) => {
     console.log('[Seed] Cleared existing collections.');
 
     // 1. Create Users
-    console.log('[Seed] Creating demo users...');
+    console.log('[Seed] Creating default requested accounts (password: 123)...');
     const superadminUser = await User.create({
-      name: 'Apex Arena Owner & CFO',
-      email: 'superadmin@atomicops.com',
-      password: 'Password123!',
+      name: 'Super Admin',
+      username: 'superadmin1',
+      email: 'superadmin1@eventigo.com',
+      password: '123',
       role: 'superadmin',
       status: 'active'
     });
 
     const adminUser = await User.create({
-      name: 'System Admin (Ops & Staff Mgr)',
-      email: 'admin@atomicops.com',
-      password: 'Password123!',
+      name: 'System Admin',
+      username: 'admin1',
+      email: 'admin1@eventigo.com',
+      password: '123',
       role: 'admin',
       status: 'active'
     });
 
     const organizerUser = await User.create({
-      name: 'Tech Events Inc',
-      email: 'organizer@atomicops.com',
-      password: 'Password123!',
+      name: 'Event Organizer',
+      username: 'organizer1',
+      email: 'organizer1@eventigo.com',
+      password: '123',
       role: 'organizer',
       status: 'active'
     });
 
     const staffUser = await User.create({
-      name: 'Door Gate Supervisor',
-      email: 'staff@atomicops.com',
-      password: 'Password123!',
+      name: 'Door Staff',
+      username: 'staff1',
+      email: 'staff1@eventigo.com',
+      password: '123',
       role: 'staff',
       status: 'active'
     });
 
     const staffUser2 = await User.create({
       name: 'Sarah Gate Specialist',
-      email: 'gate2@atomicops.com',
-      password: 'Password123!',
+      username: 'staff2',
+      email: 'gate2@eventigo.com',
+      password: '123',
       role: 'staff',
       status: 'active'
     });
 
     const attendeeUser = await User.create({
-      name: 'Alex Attendee',
-      email: 'attendee@atomicops.com',
-      password: 'Password123!',
+      name: 'Standard User',
+      username: 'user1',
+      email: 'user1@eventigo.com',
+      password: '123',
       role: 'attendee',
       status: 'active'
     });
 
-    console.log(`[Seed] Created Users: SuperAdmin (${superadminUser.email}), Admin (${adminUser.email}), Organizer (${organizerUser.email}), Staff (${staffUser.email}), Attendee (${attendeeUser.email})`);
+    // Also seed legacy aliases for backward compatibility
+    await User.create([
+      { name: 'Super Admin Legacy', email: 'superadmin@atomicops.com', password: '123', role: 'superadmin', status: 'active' },
+      { name: 'Admin Legacy', email: 'admin@atomicops.com', password: '123', role: 'admin', status: 'active' },
+      { name: 'Organizer Legacy', email: 'organizer@atomicops.com', password: '123', role: 'organizer', status: 'active' },
+      { name: 'Staff Legacy', email: 'staff@atomicops.com', password: '123', role: 'staff', status: 'active' },
+      { name: 'Attendee Legacy', email: 'attendee@atomicops.com', password: '123', role: 'attendee', status: 'active' }
+    ]);
+
+    console.log(`[Seed] Created Users: superadmin1, admin1, organizer1, staff1, user1 (all with password: 123)`);
 
     // 2. Create Categories
     console.log('[Seed] Creating categories...');

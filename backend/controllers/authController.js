@@ -20,15 +20,32 @@ const register = async (req, res) => {
 };
 
 const login = async (req, res) => {
-  const { email, password } = req.body;
-  const result = await authService.login(email, password);
-  res.status(200).json({
+  const { email, username, identifier, id, password } = req.body;
+  const loginIdentifier = email || username || identifier || id;
+  const result = await authService.login(loginIdentifier, password);
+
+  if (result.requires2FA) {
+    return res.status(200).json({
+      success: true,
+      requires2FA: true,
+      tempToken: result.tempToken,
+      email: result.email,
+      role: result.role,
+      message: result.message
+    });
+  }
+
+  setRefreshTokenCookie(res, result.refreshToken);
+  return res.status(200).json({
     success: true,
-    requires2FA: result.requires2FA,
-    tempToken: result.tempToken,
-    email: result.email,
-    role: result.role,
-    message: result.message
+    requires2FA: false,
+    token: result.accessToken,
+    user: result.user,
+    data: {
+      user: result.user,
+      accessToken: result.accessToken
+    },
+    message: 'Login successful'
   });
 };
 

@@ -138,18 +138,38 @@ class AuthService {
   }
 
   async register(userData) {
-    const { name, email, password, role } = userData;
+    const { name, email, password, role, username } = userData;
 
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      throw new ApiError(400, 'Email already registered');
+    if (!name || !email || !password) {
+      throw new ApiError(400, 'Name, email, and password are required');
+    }
+
+    const cleanEmail = email.toLowerCase().trim();
+    let cleanUsername = (username || cleanEmail.split('@')[0]).toLowerCase().trim();
+    cleanUsername = cleanUsername.replace(/[^a-z0-9_]/g, '');
+
+    // Check if email already exists
+    const existingEmail = await User.findOne({ email: cleanEmail });
+    if (existingEmail) {
+      throw new ApiError(400, 'This email is already registered. Please sign in instead.');
+    }
+
+    // Check if username already exists
+    const existingUsername = await User.findOne({ username: cleanUsername });
+    if (existingUsername) {
+      if (username) {
+        throw new ApiError(400, `The User ID "${username}" is already taken. Please choose another.`);
+      }
+      // If auto-generated from email, make it unique
+      cleanUsername = `${cleanUsername}${Math.floor(100 + Math.random() * 900)}`;
     }
 
     const userRole = ['attendee', 'organizer', 'staff', 'admin'].includes(role) ? role : 'attendee';
 
     const user = await User.create({
-      name,
-      email,
+      name: name.trim(),
+      username: cleanUsername,
+      email: cleanEmail,
       password,
       role: userRole,
       status: 'active'
@@ -162,6 +182,7 @@ class AuthService {
       user: {
         id: user._id,
         name: user.name,
+        username: user.username,
         email: user.email,
         role: user.role,
         status: user.status

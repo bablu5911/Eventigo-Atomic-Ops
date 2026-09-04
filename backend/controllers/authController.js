@@ -14,8 +14,13 @@ const register = async (req, res) => {
   setRefreshTokenCookie(res, result.refreshToken);
   res.status(201).json({
     success: true,
+    message: 'Account created successfully',
     token: result.accessToken,
-    user: result.user
+    user: result.user,
+    data: {
+      user: result.user,
+      accessToken: result.accessToken
+    }
   });
 };
 

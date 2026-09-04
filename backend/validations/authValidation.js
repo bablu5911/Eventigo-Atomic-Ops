@@ -3,8 +3,9 @@ const Joi = require('joi');
 const registerSchema = {
   body: Joi.object().keys({
     name: Joi.string().required().trim().min(2).max(100),
+    username: Joi.string().trim().alphanum().min(2).max(30).allow('', null),
     email: Joi.string().required().email().lowercase().trim(),
-    password: Joi.string().required().min(6),
+    password: Joi.string().required().min(3),
     role: Joi.string().valid('attendee', 'organizer', 'admin').default('attendee')
   })
 };

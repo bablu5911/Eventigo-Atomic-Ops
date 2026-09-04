@@ -55,17 +55,30 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const register = async (name, email, password, role = 'attendee') => {
+  const register = async (name, email, password, role = 'attendee', username = '') => {
     setError(null);
     try {
-      const res = await api.post('/auth/register', { name, email, password, role });
-      if (res.data.success) {
-        setAccessToken(res.data.token);
-        setUser(res.data.user);
-        return { success: true, user: res.data.user };
+      const res = await api.post('/auth/register', { name, email, password, role, username });
+      
+      if (typeof res.data === 'string' && res.data.includes('<!doctype html>')) {
+        const msg = 'API endpoint returned HTML. Ensure backend is running and connected.';
+        setError(msg);
+        return { success: false, error: msg };
       }
+
+      if (res.data?.success) {
+        const token = res.data.token || res.data?.data?.accessToken;
+        const user = res.data.user || res.data?.data?.user;
+        if (token) setAccessToken(token);
+        if (user) setUser(user);
+        return { success: true, user };
+      }
+
+      const msg = res.data?.error || res.data?.message || 'Registration failed';
+      setError(msg);
+      return { success: false, error: msg };
     } catch (err) {
-      const msg = err.response?.data?.error || 'Registration failed';
+      const msg = err.response?.data?.error || err.response?.data?.message || err.message || 'Registration failed';
       setError(msg);
       return { success: false, error: msg };
     }

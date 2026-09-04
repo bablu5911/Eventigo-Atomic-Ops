@@ -11,8 +11,9 @@ import { Triangle, UserPlus, Mail, Key, User } from 'lucide-react';
 
 const registerSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
+  username: z.string().min(2, 'User ID must be at least 2 characters').max(30).optional().or(z.literal('')),
   email: z.string().email('Invalid email address'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
+  password: z.string().min(3, 'Password must be at least 3 characters'),
   role: z.enum(['attendee', 'organizer']).default('attendee')
 });
 
@@ -29,18 +30,20 @@ export default function RegisterPage() {
   } = useForm({
     resolver: zodResolver(registerSchema),
     defaultValues: {
-      role: 'attendee'
+      role: 'attendee',
+      username: ''
     }
   });
 
   const onSubmit = async (data) => {
     setLoading(true);
-    const res = await registerAuth(data.name, data.email, data.password, data.role);
-    if (res.success) {
-      toast.success('Account created successfully!');
-      navigate('/');
+    const res = await registerAuth(data.name, data.email, data.password, data.role, data.username);
+    if (res?.success) {
+      toast.success(`Welcome to Eventigo, ${res.user?.name || data.name}!`);
+      if (data.role === 'organizer') navigate('/organizer');
+      else navigate('/');
     } else {
-      toast.error(res.error || 'Registration failed');
+      toast.error(res?.error || 'Registration failed. Please try again.');
     }
     setLoading(false);
   };
@@ -93,6 +96,20 @@ export default function RegisterPage() {
           </div>
 
           <div className="space-y-1.5">
+            <label className="text-brand-dark font-semibold block">User ID / Username <span className="text-brand-dark/40 font-normal">(Optional)</span></label>
+            <div className="relative">
+              <User className="w-4 h-4 text-brand-dark/40 absolute left-3.5 top-3" />
+              <input
+                type="text"
+                placeholder="e.g. user2, alex1 (auto-generated if blank)"
+                {...register('username')}
+                className="w-full bg-brand-cream border border-brand-dark/10 rounded-2xl pl-10 pr-4 py-2.5 text-brand-dark placeholder-brand-dark/40 focus:outline-none focus:border-brand-dark/40 font-mono"
+              />
+            </div>
+            {errors.username && <p className="text-rose-600 text-[11px] mt-1">{errors.username.message}</p>}
+          </div>
+
+          <div className="space-y-1.5">
             <label className="text-brand-dark font-semibold block">Email Address</label>
             <div className="relative">
               <Mail className="w-4 h-4 text-brand-dark/40 absolute left-3.5 top-3" />
@@ -112,7 +129,7 @@ export default function RegisterPage() {
               <Key className="w-4 h-4 text-brand-dark/40 absolute left-3.5 top-3" />
               <input
                 type="password"
-                placeholder="Minimum 6 characters"
+                placeholder="Minimum 3 characters (e.g. 123)"
                 {...register('password')}
                 className="w-full bg-brand-cream border border-brand-dark/10 rounded-2xl pl-10 pr-4 py-2.5 text-brand-dark placeholder-brand-dark/40 focus:outline-none focus:border-brand-dark/40 font-mono"
               />

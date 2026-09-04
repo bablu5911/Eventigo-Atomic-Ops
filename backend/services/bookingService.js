@@ -4,7 +4,7 @@ const TicketType = require('../models/TicketType');
 const PromoCode = require('../models/PromoCode');
 const mongoose = require('mongoose');
 const ApiError = require('../utils/ApiError');
-const { generateQRCode } = require('../utils/qrcode');
+const { generateQRCode } = require('../utils/qrCode');
 const passRegistryService = require('./passRegistryService');
 const superadminService = require('./superadminService');
 

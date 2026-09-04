@@ -110,9 +110,11 @@ app.use(errorHandler);
 const PORT = process.env.PORT || 5000;
 const HOST = process.env.HOST || '0.0.0.0';
 
-app.listen(PORT, HOST, () => {
-  console.log(`[Atomic Ops Server] running in ${process.env.NODE_ENV || 'development'} mode on http://${HOST}:${PORT}`);
-  console.log(`[Swagger Docs available at]: http://localhost:${PORT}/api-docs`);
-});
+if (!process.env.VERCEL) {
+  app.listen(PORT, HOST, () => {
+    console.log(`[Atomic Ops Server] running in ${process.env.NODE_ENV || 'development'} mode on http://${HOST}:${PORT}`);
+    console.log(`[Swagger Docs available at]: http://localhost:${PORT}/api-docs`);
+  });
+}
 
 module.exports = app;

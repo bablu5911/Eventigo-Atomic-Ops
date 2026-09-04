@@ -7,13 +7,25 @@ import QRModal from '../components/QRModal';
 import ThermalTicketPrinter from '../components/ThermalTicketPrinter';
 import Modal from '../components/Modal';
 import SkeletonCard from '../components/SkeletonCard';
-import { Ticket, QrCode, Download, Calendar, MapPin, XCircle, Star, MessageSquare, AlertCircle, Users, Share2, Sparkles, Copy, Printer } from 'lucide-react';
+import { Ticket, QrCode, Download, Calendar, MapPin, XCircle, Star, MessageSquare, AlertCircle, Users, Share2, Sparkles, Copy, Printer, Radio, Bell } from 'lucide-react';
 
 export default function MyBookingsPage() {
   const { data: bookings = [], isLoading, isError, error, refetch } = useMyBookings();
   const [selectedQRBooking, setSelectedQRBooking] = useState(null);
   const [selectedThermalBooking, setSelectedThermalBooking] = useState(null);
   const [myRewards, setMyRewards] = useState([]);
+  const [activeAlerts, setActiveAlerts] = useState([]);
+
+  const fetchAlerts = async () => {
+    try {
+      const res = await api.get('/broadcasts/my-alerts');
+      if (res.data?.success && Array.isArray(res.data.data)) {
+        setActiveAlerts(res.data.data);
+      }
+    } catch (err) {
+      // Ignore
+    }
+  };
 
   const fetchRewards = async () => {
     try {
@@ -28,6 +40,9 @@ export default function MyBookingsPage() {
 
   useEffect(() => {
     fetchRewards();
+    fetchAlerts();
+    const interval = setInterval(fetchAlerts, 15000);
+    return () => clearInterval(interval);
   }, []);
 
   const [reviewModalBooking, setReviewModalBooking] = useState(null);
@@ -93,6 +108,71 @@ export default function MyBookingsPage() {
           </p>
         </div>
       </div>
+
+      {/* Event-Bound Live Directives Banner */}
+      {activeAlerts.length > 0 && (
+        <div className="bg-gradient-to-r from-neutral-900 via-neutral-950 to-neutral-900 border-2 border-emerald-500/50 rounded-3xl p-6 shadow-xl space-y-4 text-white">
+          <div className="flex items-center justify-between border-b border-white/10 pb-3">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 rounded-2xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
+                <Radio className="w-5 h-5 animate-pulse" />
+              </div>
+              <div>
+                <div className="flex items-center space-x-2">
+                  <h3 className="text-sm font-bold uppercase tracking-wide text-white">
+                    Live Organizer Gate Directives
+                  </h3>
+                  <span className="text-[10px] bg-emerald-500 text-neutral-950 font-black px-2.5 py-0.5 rounded-full uppercase font-mono">
+                    {activeAlerts.length} Directives for Your Events
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-400 font-mono">
+                  Official announcements sent exclusively to confirmed ticket holders
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {activeAlerts.map((alert) => (
+              <div
+                key={alert._id}
+                className="bg-neutral-900/90 border border-white/10 rounded-2xl p-4 space-y-2 hover:border-emerald-500/40 transition-colors"
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-xs font-mono font-bold text-emerald-400 truncate">
+                    {alert.event?.title || 'Your Event'}
+                  </span>
+                  <div className="flex items-center space-x-1.5">
+                    <span
+                      className={`text-[9px] font-mono font-bold uppercase px-2 py-0.5 rounded-full ${
+                        alert.priority === 'urgent'
+                          ? 'bg-rose-500/20 text-rose-300 border border-rose-500/40'
+                          : alert.priority === 'info'
+                          ? 'bg-blue-500/20 text-blue-300 border border-blue-500/40'
+                          : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
+                      }`}
+                    >
+                      {alert.priority === 'urgent' ? '🚨 Urgent' : alert.priority === 'info' ? 'ℹ️ Info' : '🚪 Gate Directive'}
+                    </span>
+                    <span className="text-[9px] font-mono bg-white/10 text-slate-300 px-2 py-0.5 rounded-full">
+                      {alert.targetGate || 'All Gates'}
+                    </span>
+                  </div>
+                </div>
+
+                <h4 className="font-bold text-sm text-white">{alert.title}</h4>
+                <p className="text-xs text-slate-300 leading-relaxed font-sans">{alert.message}</p>
+
+                <div className="pt-2 border-t border-white/5 flex items-center justify-between text-[10px] font-mono text-slate-400">
+                  <span>Organizer: {alert.organizer?.name || 'Event Host'}</span>
+                  <span>{new Date(alert.sentAt || alert.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Early Exit Reward Coupons Wallet Section */}
       {myRewards.length > 0 && (

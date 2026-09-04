@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import api from '../services/api';
 import QRScannerModal from '../components/QRScannerModal';
+import ScannerMetricsBar from '../components/ScannerMetricsBar';
 import {
   QrCode,
   ShieldCheck,
@@ -38,6 +39,7 @@ export default function DoorCheckerPage() {
   const [exitCount, setExitCount] = useState(1);
   const [minutesEarly, setMinutesEarly] = useState(25);
   const [gateLockdown, setGateLockdown] = useState({ active: false, reason: '' });
+  const [refreshMetricsTrigger, setRefreshMetricsTrigger] = useState(0);
 
   useEffect(() => {
     fetchEvents();
@@ -100,12 +102,15 @@ export default function DoorCheckerPage() {
           toast.error(verifiedData.error || 'Venue mismatch: Ticket denied');
         } else if (verifiedData.alreadyAttended) {
           toast.error(verifiedData.error || 'Ticket pass was ALREADY verified at entry');
-        } else if (verifiedData.remainingTickets > 0) {
-          toast.success(
-            `Admitted ${verifiedData.admittedNow || 1} guest(s)! ${verifiedData.remainingTickets} ticket(s) remaining.`
-          );
         } else {
-          toast.success('Ticket Pass Validated & Entry Approved!');
+          setRefreshMetricsTrigger((prev) => prev + 1);
+          if (verifiedData.remainingTickets > 0) {
+            toast.success(
+              `Admitted ${verifiedData.admittedNow || 1} guest(s)! ${verifiedData.remainingTickets} ticket(s) remaining.`
+            );
+          } else {
+            toast.success('Ticket Pass Validated & Entry Approved!');
+          }
         }
       }
     } catch (err) {
@@ -305,6 +310,9 @@ export default function DoorCheckerPage() {
           </div>
         )}
       </div>
+
+      {/* Live Scanner Telemetry & Team Gate Turnout Counter */}
+      <ScannerMetricsBar eventId={selectedEventId} refreshTrigger={refreshMetricsTrigger} />
 
       {/* MODE 1: Gate Entry Verification Input */}
       {checkerMode === 'entry' && (

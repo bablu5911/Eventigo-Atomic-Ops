@@ -23,6 +23,7 @@ const dashboardRoutes = require('./routes/dashboardRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const superadminRoutes = require('./routes/superadminRoutes');
 const chatRoutes = require('./routes/chatRoutes');
+const broadcastRoutes = require('./routes/broadcastRoutes');
 
 const app = express();
 
@@ -103,6 +104,7 @@ app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/superadmin', superadminRoutes);
 app.use('/api/chat', chatRoutes);
+app.use('/api/broadcasts', broadcastRoutes);
 
 // Central Error Handler
 app.use(errorHandler);

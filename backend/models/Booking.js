@@ -76,7 +76,9 @@ const bookingSchema = new mongoose.Schema(
         ticketTypeName: { type: String, default: 'Standard Pass' },
         status: { type: String, enum: ['valid', 'used', 'cancelled', 'exited_early'], default: 'valid' },
         admittedAt: { type: Date, default: null },
-        exitedAt: { type: Date, default: null }
+        exitedAt: { type: Date, default: null },
+        scannedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+        scannedByName: { type: String, default: '' }
       }
     ],
     checkInLogs: [
@@ -84,7 +86,9 @@ const bookingSchema = new mongoose.Schema(
         admittedCount: { type: Number, required: true },
         admittedAt: { type: Date, default: Date.now },
         gate: { type: String, default: '' },
-        note: { type: String, default: '' }
+        note: { type: String, default: '' },
+        scannedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+        scannedByName: { type: String, default: '' }
       }
     ],
     earlyExitCount: {

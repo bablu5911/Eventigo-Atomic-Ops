@@ -14,6 +14,7 @@ router.get('/gate-status', auth, (req, res) => {
   const superadminService = require('../services/superadminService');
   res.status(200).json({ success: true, lockdown: superadminService.getLockdownDetails() });
 });
+router.get('/scanner-metrics', auth, authorize('organizer', 'admin', 'staff', 'superadmin'), catchAsync(bookingController.getScannerMetrics));
 router.post('/verify', auth, authorize('organizer', 'admin', 'staff', 'superadmin'), validate(verifyTicketSchema), catchAsync(bookingController.verifyTicketCheckIn));
 router.post('/verify-checkin', auth, authorize('organizer', 'admin', 'staff', 'superadmin'), validate(checkInSchema), catchAsync(bookingController.verifyCheckIn));
 router.post('/verify-code', auth, authorize('organizer', 'admin', 'staff', 'superadmin'), validate(checkInSchema), catchAsync(bookingController.verifyCheckIn));

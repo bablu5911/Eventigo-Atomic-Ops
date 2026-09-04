@@ -12,7 +12,8 @@ const collections = {
   PromoCode: nedb.create(),
   Review: nedb.create(),
   ChatMessage: nedb.create(),
-  StaffAssignment: nedb.create()
+  StaffAssignment: nedb.create(),
+  BroadcastNotification: nedb.create()
 };
 
 let isInMemoryMode = false;
@@ -234,7 +235,19 @@ const formatDoc = (doc, collectionName) => {
   };
 
   obj.save = async function() {
-    await collections[collectionName].update({ _id: doc._id }, { $set: this });
+    const dataToSave = {};
+    for (const [key, val] of Object.entries(this)) {
+      if (typeof val !== 'function') {
+        dataToSave[key] = val;
+      }
+    }
+    if (dataToSave.event && typeof dataToSave.event === 'object' && dataToSave.event._id) {
+      dataToSave.event = String(dataToSave.event._id);
+    }
+    if (dataToSave.user && typeof dataToSave.user === 'object' && dataToSave.user._id) {
+      dataToSave.user = String(dataToSave.user._id);
+    }
+    await collections[collectionName].update({ _id: doc._id }, { $set: dataToSave });
     return this;
   };
 

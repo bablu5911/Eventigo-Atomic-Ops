@@ -295,11 +295,13 @@ class BookingService {
     return booking;
   }
 
-  async verifyCheckIn(code, organizerId, userRole, expectedEventId = null, admitCount = null) {
+  async verifyCheckIn(code, organizerId, userRole, expectedEventId = null, admitCount = null, scannerUser = null) {
     if (!code) {
       throw new ApiError(400, 'Ticket pass code is required');
     }
     const cleanCode = String(code).trim().toUpperCase();
+    const scannerId = scannerUser?._id || organizerId;
+    const scannerName = scannerUser?.name || scannerUser?.username || (userRole === 'staff' ? 'Staff Scanner' : 'Gate Checker');
 
     // Emergency Gate Lockdown Check
     if (superadminService.isEmergencyGateLockdownActive()) {
@@ -393,13 +395,18 @@ class BookingService {
       // Admitting this individual guest
       matchedSubTicket.status = 'used';
       matchedSubTicket.admittedAt = new Date();
+      if (scannerId) matchedSubTicket.scannedBy = scannerId;
+      matchedSubTicket.scannedByName = scannerName;
+
       booking.checkedInCount = currentCheckedIn + 1;
       if (!booking.checkInLogs) booking.checkInLogs = [];
       booking.checkInLogs.push({
         admittedCount: 1,
         admittedAt: new Date(),
         gate: booking.gateEntry || 'Gate A • Main Entrance',
-        note: `Admitted via individual guest pass #${matchedSubTicket.ticketIndex} (${cleanCode})`
+        note: `Admitted via individual guest pass #${matchedSubTicket.ticketIndex} (${cleanCode})`,
+        scannedBy: scannerId,
+        scannedByName: scannerName
       });
 
       const isFullyAdmitted = booking.checkedInCount >= totalCount;
@@ -459,6 +466,8 @@ class BookingService {
         if (st.status === 'valid' && marked < countToAdmit) {
           st.status = 'used';
           st.admittedAt = new Date();
+          if (scannerId) st.scannedBy = scannerId;
+          st.scannedByName = scannerName;
           marked++;
         }
       }
@@ -470,7 +479,9 @@ class BookingService {
       admittedCount: countToAdmit,
       admittedAt: new Date(),
       gate: booking.gateEntry || 'Gate A • Express Check-In',
-      note: `Admitted ${countToAdmit} guest(s) via master pass`
+      note: `Admitted ${countToAdmit} guest(s) via master pass`,
+      scannedBy: scannerId,
+      scannedByName: scannerName
     });
 
     const isFullyAdmitted = booking.checkedInCount >= totalCount;
@@ -696,7 +707,7 @@ class BookingService {
     };
   }
 
-  async verifyAndCheckInTicket({ code, eventId, guardId }) {
+  async verifyAndCheckInTicket({ code, eventId, guardId, guardUser }) {
     // 1. Check Super Admin Emergency Gate Lockdown
     if (superadminService && superadminService.isEmergencyGateLockdownActive()) {
       throw new ApiError(423, 'EMERGENCY_GATE_LOCKDOWN: Venue turnstiles locked by Super Admin.');
@@ -708,6 +719,7 @@ class BookingService {
 
     const cleanCode = code.trim();
     const cleanEventId = eventId.trim();
+    const guardName = guardUser?.name || guardUser?.username || 'Staff Scanner';
 
     // 2. Query booking by bookingCode, _id, or individualTickets.ticketCode
     const queryConditions = [
@@ -777,7 +789,9 @@ class BookingService {
             admittedCount: totalCount,
             admittedAt: now,
             gate: 'Main Gate Live Scanner',
-            note: `Verified by guard ${guardId || 'staff'}`
+            note: `Verified by guard ${guardName}`,
+            scannedBy: guardId,
+            scannedByName: guardName
           }
         }
       },
@@ -820,6 +834,73 @@ class BookingService {
         title: verifiedBooking.event?.title || '',
         id: verifiedBooking.event?._id
       }
+    };
+  }
+
+  /**
+   * Get scanner team metrics and personal stats for gate checkers
+   */
+  async getScannerMetrics(staffUserId, eventId = null) {
+    const allBookings = await Booking.find({}).select('totalTicketsCount checkedInCount checkInLogs individualTickets event status');
+
+    let bookings = allBookings;
+    if (eventId && eventId !== 'all') {
+      const targetId = String(eventId).trim();
+      bookings = allBookings.filter((b) => {
+        const bEvent = b.event;
+        const bEventId = String(bEvent?._id || bEvent?.eventId || bEvent || '').trim();
+        return bEventId === targetId;
+      });
+    }
+
+    let personalCount = 0;
+    const teamMap = {};
+    let totalAdmitted = 0;
+    let totalTickets = 0;
+
+    const staffIdStr = String(staffUserId || '');
+
+    bookings.forEach((b) => {
+      totalTickets += (b.totalTicketsCount || 1);
+      totalAdmitted += (b.checkedInCount || 0);
+
+      if (Array.isArray(b.checkInLogs)) {
+        b.checkInLogs.forEach((log) => {
+          const logScannedBy = log.scannedBy ? String(log.scannedBy) : null;
+          const logAdmittedCount = Number(log.admittedCount) || 1;
+          const staffName = log.scannedByName || (logScannedBy === staffIdStr ? 'You' : 'Staff Guard');
+
+          if (logScannedBy) {
+            if (!teamMap[logScannedBy]) {
+              teamMap[logScannedBy] = {
+                staffId: logScannedBy,
+                name: staffName,
+                count: 0,
+                lastScanAt: log.admittedAt || null
+              };
+            }
+            teamMap[logScannedBy].count += logAdmittedCount;
+            if (log.admittedAt && (!teamMap[logScannedBy].lastScanAt || new Date(log.admittedAt) > new Date(teamMap[logScannedBy].lastScanAt))) {
+              teamMap[logScannedBy].lastScanAt = log.admittedAt;
+            }
+
+            if (logScannedBy === staffIdStr) {
+              personalCount += logAdmittedCount;
+            }
+          }
+        });
+      }
+    });
+
+    const teamCheckers = Object.values(teamMap).sort((a, b) => b.count - a.count);
+
+    return {
+      personalCount,
+      totalAdmitted,
+      totalTickets,
+      remainingTickets: Math.max(0, totalTickets - totalAdmitted),
+      checkedInPercent: totalTickets > 0 ? Math.round((totalAdmitted / totalTickets) * 100) : 0,
+      teamCheckers
     };
   }
 }

@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Html5Qrcode } from 'html5-qrcode';
 import api from '../services/api';
 import toast from 'react-hot-toast';
+import ScannerMetricsBar from '../components/ScannerMetricsBar';
 import {
   Camera,
   Flashlight,
@@ -116,6 +117,7 @@ export default function DoorScannerPage() {
   const [manualCode, setManualCode] = useState('');
   const [isVerifying, setIsVerifying] = useState(false);
   const [gateLockdown, setGateLockdown] = useState({ active: false, reason: '' });
+  const [refreshMetricsTrigger, setRefreshMetricsTrigger] = useState(0);
 
   // Verification result modal state
   // null | { type: 'VALID' | 'ALREADY_USED' | 'INVALID', data?: object, message?: string, code: string }
@@ -305,6 +307,7 @@ export default function DoorScannerPage() {
       const data = res.data;
       if (data.status === 'VALID') {
         playSoundFeedback('valid');
+        setRefreshMetricsTrigger((prev) => prev + 1);
         setScanResult({
           type: 'VALID',
           data,
@@ -468,6 +471,11 @@ export default function DoorScannerPage() {
           </div>
         </div>
       )}
+
+      {/* Live Scanner Telemetry & Team Roster */}
+      <div className="max-w-6xl mx-auto px-4 sm:px-8 mt-6">
+        <ScannerMetricsBar eventId={selectedEventId} refreshTrigger={refreshMetricsTrigger} />
+      </div>
 
       {/* Main Scanner Section */}
       <div className="max-w-6xl mx-auto px-4 sm:px-8 mt-6 grid grid-cols-1 lg:grid-cols-12 gap-6">

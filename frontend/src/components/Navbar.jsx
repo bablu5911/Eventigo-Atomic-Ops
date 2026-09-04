@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Triangle, Ticket, Calendar, Shield, Cpu, LogOut, User as UserIcon, LogIn, UserPlus, QrCode, MessageSquare, Plus, Crown } from 'lucide-react';
+import api from '../services/api';
+import { Triangle, Ticket, Calendar, Shield, Cpu, LogOut, User as UserIcon, LogIn, UserPlus, QrCode, MessageSquare, Plus, Crown, Bell, Radio } from 'lucide-react';
 
 export default function Navbar() {
   const { user, logout } = useAuth();
@@ -25,6 +26,34 @@ export default function Navbar() {
       document.body.style.overflow = '';
     }
   }, [mobileOpen]);
+
+  const [alerts, setAlerts] = useState([]);
+  const [bellOpen, setBellOpen] = useState(false);
+
+  useEffect(() => {
+    if (!user) {
+      setAlerts([]);
+      return;
+    }
+    const fetchUserAlerts = async () => {
+      try {
+        const res = await api.get('/broadcasts/my-alerts');
+        if (res.data?.success && Array.isArray(res.data.data)) {
+          setAlerts(res.data.data);
+        }
+      } catch (err) {
+        // silent
+      }
+    };
+    fetchUserAlerts();
+    const timer = setInterval(fetchUserAlerts, 15000);
+    return () => clearInterval(timer);
+  }, [user]);
+
+  // Close dropdown on location change
+  useEffect(() => {
+    setBellOpen(false);
+  }, [location.pathname]);
 
   const toggleMobileMenu = () => setMobileOpen(prev => !prev);
   const closeMobileMenu = () => setMobileOpen(false);
@@ -263,6 +292,79 @@ export default function Navbar() {
 
             {user ? (
               <div className="flex items-center space-x-2">
+                {/* Event & Gate Directives Notification Bell */}
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={() => setBellOpen(!bellOpen)}
+                    title="Gate & Event Directives"
+                    className={`relative p-2 rounded-full transition-all border ${
+                      alerts.length > 0
+                        ? 'bg-emerald-950/60 border-emerald-500/50 text-emerald-400 hover:bg-emerald-900/60'
+                        : 'bg-neutral-900/90 border-white/10 text-slate-400 hover:text-white hover:bg-white/5'
+                    }`}
+                  >
+                    <Bell className="w-4 h-4" />
+                    {alerts.length > 0 && (
+                      <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-emerald-500 text-[10px] font-black text-neutral-950 font-mono ring-2 ring-neutral-950 animate-pulse">
+                        {alerts.length}
+                      </span>
+                    )}
+                  </button>
+
+                  {/* Dropdown Menu */}
+                  {bellOpen && (
+                    <div className="absolute right-0 mt-2 w-80 sm:w-96 rounded-3xl bg-neutral-950 border border-white/15 p-4 shadow-2xl z-50 space-y-3 animate-in fade-in slide-in-from-top-2 duration-150">
+                      <div className="flex items-center justify-between border-b border-white/10 pb-2.5">
+                        <div className="flex items-center space-x-2">
+                          <Radio className="w-4 h-4 text-emerald-400" />
+                          <span className="text-xs font-bold uppercase tracking-wider text-white">Event &amp; Gate Alerts</span>
+                        </div>
+                        <span className="text-[10px] font-mono font-bold bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded-full border border-emerald-500/30">
+                          {alerts.length} Active
+                        </span>
+                      </div>
+
+                      {alerts.length === 0 ? (
+                        <div className="py-6 text-center text-xs font-mono text-slate-400 space-y-1">
+                          <p>No active directives right now.</p>
+                          <p className="text-[10px] text-slate-500">Alerts for events you hold tickets for will appear here.</p>
+                        </div>
+                      ) : (
+                        <div className="max-h-72 overflow-y-auto space-y-2 pr-1 divide-y divide-white/5">
+                          {alerts.map((al) => (
+                            <div key={al._id} className="pt-2 first:pt-0 space-y-1">
+                              <div className="flex items-center justify-between gap-1">
+                                <span className="text-[11px] font-bold text-emerald-400 truncate max-w-[190px]">
+                                  {al.event?.title || 'Your Event'}
+                                </span>
+                                <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-white/10 text-slate-300">
+                                  {al.targetGate || 'All Gates'}
+                                </span>
+                              </div>
+                              <h5 className="text-xs font-bold text-white">{al.title}</h5>
+                              <p className="text-[11px] text-slate-300 leading-relaxed font-sans">{al.message}</p>
+                              <div className="text-[9px] text-slate-500 font-mono text-right">
+                                {new Date(al.sentAt || al.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      <div className="pt-2 border-t border-white/10">
+                        <Link
+                          to="/my-bookings"
+                          onClick={() => setBellOpen(false)}
+                          className="block text-center py-2 px-3 rounded-2xl bg-white/5 hover:bg-emerald-500/20 text-xs font-mono text-emerald-400 font-bold transition-colors"
+                        >
+                          Open Ticket Wallet &amp; Passes →
+                        </Link>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
                 <Link
                   to="/profile"
                   className="flex items-center space-x-2 px-4 py-2 rounded-full bg-neutral-900/90 border border-white/10 hover:border-emerald-500/40 transition-colors shadow-sm"
@@ -433,6 +535,16 @@ export default function Navbar() {
           <div className="pt-4 flex flex-col items-center gap-3 w-64">
             {user ? (
               <>
+                {alerts.length > 0 && (
+                  <Link
+                    to="/my-bookings"
+                    onClick={closeMobileMenu}
+                    className="w-full text-center py-2.5 bg-emerald-950/80 border border-emerald-500/50 text-emerald-400 font-bold rounded-full text-xs font-mono flex items-center justify-center space-x-2"
+                  >
+                    <Radio className="w-3.5 h-3.5 animate-pulse" />
+                    <span>{alerts.length} Event Gate Directive(s) Active</span>
+                  </Link>
+                )}
                 <Link
                   to="/profile"
                   onClick={closeMobileMenu}

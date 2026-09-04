@@ -5,6 +5,7 @@ import api from '../services/api';
 import Modal from '../components/Modal';
 import QRScannerModal from '../components/QRScannerModal';
 import Spinner from '../components/Spinner';
+import BroadcastDispatcher from '../components/BroadcastDispatcher';
 import { Cpu, Plus, Calendar, DollarSign, Users, Ticket, QrCode, Download, RefreshCw, AlertCircle } from 'lucide-react';
 
 export default function OrganizerDashboard() {
@@ -212,6 +213,9 @@ export default function OrganizerDashboard() {
               </div>
             </div>
           </div>
+
+          {/* Organizer Gate Directives & Attendee Broadcast Center */}
+          <BroadcastDispatcher events={events} />
 
           {/* Events Management Table */}
           <div className="bg-white/80 backdrop-blur-md border border-brand-dark/10 rounded-3xl overflow-hidden shadow-sm">

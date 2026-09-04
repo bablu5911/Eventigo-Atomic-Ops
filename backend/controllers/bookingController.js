@@ -45,7 +45,7 @@ const cancelBooking = async (req, res) => {
 
 const verifyCheckIn = async (req, res) => {
   const { bookingCode, eventId, admitCount } = req.body;
-  const result = await bookingService.verifyCheckIn(bookingCode, req.user.id, req.user.role, eventId, admitCount);
+  const result = await bookingService.verifyCheckIn(bookingCode, req.user.id, req.user.role, eventId, admitCount, req.user);
   res.status(200).json({
     success: true,
     message: result.alreadyAttended ? 'Pass already attended' : 'Check-in verified successfully',
@@ -75,11 +75,21 @@ const verifyTicketCheckIn = async (req, res) => {
   const result = await bookingService.verifyAndCheckInTicket({
     code,
     eventId,
-    guardId: req.user.id
+    guardId: req.user.id,
+    guardUser: req.user
   });
   res.status(200).json({
     success: true,
     ...result
+  });
+};
+
+const getScannerMetrics = async (req, res) => {
+  const { eventId } = req.query;
+  const metrics = await bookingService.getScannerMetrics(req.user._id, eventId);
+  res.status(200).json({
+    success: true,
+    data: metrics
   });
 };
 
@@ -91,5 +101,6 @@ module.exports = {
   cancelBooking,
   verifyCheckIn,
   verifyTicketCheckIn,
-  processEarlyExit
+  processEarlyExit,
+  getScannerMetrics
 };

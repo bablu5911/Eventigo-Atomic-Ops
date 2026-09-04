@@ -101,26 +101,32 @@ npm run dev
 
 ---
 
-## 🚀 Independent Cloud Deployment (Render + Vercel)
+## 🚀 1-Click Cloud Deployment (Render + Vercel)
 
-For detailed step-by-step instructions with screenshots, see [Deployment Guide (`docs/deployment.md`)](docs/deployment.md).
+| Service | Target Platform | 1-Click Deploy |
+| :--- | :--- | :--- |
+| **Backend API Engine** | **Render (Node.js)** | [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/bablu5911/Eventigo-Atomic-Ops) |
+| **Frontend Client SPA** | **Vercel (React + Vite)** | [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/bablu5911/Eventigo-Atomic-Ops&root-directory=frontend) |
+
+For detailed step-by-step instructions, see the [Full Deployment Guide (`docs/deployment.md`)](docs/deployment.md).
 
 ### 1. Backend on Render (`/backend`)
-- **Option A (Blueprint)**: Connect your GitHub repo to Render and select **New Blueprint** — Render uses root `render.yaml` automatically.
-- **Option B (Web Service)**:
+- **Option A (1-Click Blueprint)**: Click the **Deploy to Render** button above. Render reads root `render.yaml` automatically.
+- **Option B (Manual Web Service)**:
   - Root Directory: `backend`
   - Build Command: `npm install`
   - Start Command: `npm start`
-  - Health Check: `/api/health`
-  - Required Env Vars: `NODE_ENV=production`, `PORT=10000`, `HOST=0.0.0.0`, `JWT_SECRET`, `JWT_REFRESH_SECRET`, `CLIENT_URL=https://your-app.vercel.app`.
+  - Health Check Path: `/api/health`
+  - Environment Variables: `NODE_ENV=production`, `PORT=10000`, `HOST=0.0.0.0`, `JWT_SECRET`, `JWT_REFRESH_SECRET`, `CLIENT_URL=https://your-app.vercel.app`.
+  - Database: Optional `MONGO_URI`. If omitted, the engine automatically uses the built-in zero-dependency in-memory store with auto-seeding!
 
 ### 2. Frontend on Vercel (`/frontend`)
-- Import GitHub repo into Vercel.
+- Click the **Deploy with Vercel** button above.
 - **Root Directory**: `frontend`
 - **Framework Preset**: `Vite`
 - **Build Command**: `npm run build`
 - **Output Directory**: `dist`
-- **Environment Variable**: `VITE_API_URL=https://your-backend.onrender.com/api`
+- **Environment Variable**: `VITE_API_URL=https://<your-render-backend>.onrender.com/api`
 - *Automatic SPA route rewrite is handled by `frontend/vercel.json` to prevent 404s on refresh.*
 
 ---

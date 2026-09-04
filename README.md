@@ -87,20 +87,47 @@ npm run dev
 
 ---
 
-## 🔐 Demo Credentials
+## 🔐 Multi-Tier Roles & Demo Credentials
 
-| Role | Email | Password | Access Rights |
-| :--- | :--- | :--- | :--- |
-| **System Admin** | `admin@atomicops.com` | `Password123!` | Platform metrics, category management, event approvals |
-| **Organizer** | `organizer@atomicops.com` | `Password123!` | Create/host events, ticket tier releases, door QR scanner |
-| **Attendee** | `attendee@atomicops.com` | `Password123!` | Book events, apply promo codes, download PDF tickets, write reviews |
+| Role | Email | Password | 2FA OTP | Primary Workspace |
+| :--- | :--- | :--- | :--- | :--- |
+| **👑 Super Admin** | `superadmin@atomicops.com` | `Password123!` | `123456` | **Venue Financials & Capacity Suite** (`/superadmin`) |
+| **🛡️ System Admin** | `admin@atomicops.com` | `Password123!` | `123456` | **Operations, Events & Staff Manager** (`/admin`) |
+| **⚡ Organizer** | `organizer@atomicops.com` | `Password123!` | N/A | **Assigned Events Studio** (`/organizer`) |
+| **📱 Door Staff** | `staff@atomicops.com` | `Password123!` | N/A | **Gate & Check-in App** (`/door-checker`) |
+| **🎟️ Attendee** | `attendee@atomicops.com` | `Password123!` | N/A | **Pass Buyer & Ticket Wallet** (`/events`, `/my-bookings`) |
 
-*One-click quick login buttons are also built directly into the `/login` page.*
+*One-click login buttons for all 5 roles are built directly into the `/login` interface.*
+
+---
+
+## 🚀 Independent Cloud Deployment (Render + Vercel)
+
+For detailed step-by-step instructions with screenshots, see [Deployment Guide (`docs/deployment.md`)](docs/deployment.md).
+
+### 1. Backend on Render (`/backend`)
+- **Option A (Blueprint)**: Connect your GitHub repo to Render and select **New Blueprint** — Render uses root `render.yaml` automatically.
+- **Option B (Web Service)**:
+  - Root Directory: `backend`
+  - Build Command: `npm install`
+  - Start Command: `npm start`
+  - Health Check: `/api/health`
+  - Required Env Vars: `NODE_ENV=production`, `PORT=10000`, `HOST=0.0.0.0`, `JWT_SECRET`, `JWT_REFRESH_SECRET`, `CLIENT_URL=https://your-app.vercel.app`.
+
+### 2. Frontend on Vercel (`/frontend`)
+- Import GitHub repo into Vercel.
+- **Root Directory**: `frontend`
+- **Framework Preset**: `Vite`
+- **Build Command**: `npm run build`
+- **Output Directory**: `dist`
+- **Environment Variable**: `VITE_API_URL=https://your-backend.onrender.com/api`
+- *Automatic SPA route rewrite is handled by `frontend/vercel.json` to prevent 404s on refresh.*
 
 ---
 
 ## 📚 Documentation Links
 
+- [Cloud Deployment Guide (`docs/deployment.md`)](docs/deployment.md)
 - [System Architecture & Sequences (`docs/architecture.md`)](docs/architecture.md)
 - [Database ER Diagram (`docs/er-diagram.md`)](docs/er-diagram.md)
 - [API Endpoints Directory (`docs/api-list.md`)](docs/api-list.md)

@@ -1,0 +1,31 @@
+{
+  "name": "atomic-ops-backend",
+  "version": "1.0.0",
+  "description": "Full-Stack Event Booking & Ticketing Engine Backend",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "seed": "node seed.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cloudinary": "^2.10.0",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "express-rate-limit": "^8.6.2",
+    "helmet": "^7.1.0",
+    "joi": "^18.2.3",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.3.1",
+    "multer": "^1.4.5-lts.1",
+    "nedb-promises": "^6.2.3",
+    "nodemailer": "^6.9.13",
+    "pdfkit": "^0.15.0",
+    "qrcode": "^1.5.3",
+    "swagger-jsdoc": "^6.3.0",
+    "swagger-ui-express": "^5.0.1"
+  }
+}

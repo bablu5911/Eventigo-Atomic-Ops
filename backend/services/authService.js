@@ -8,7 +8,7 @@ const generateAccessToken = (userId) => {
   return jwt.sign(
     { id: userId },
     process.env.JWT_SECRET || 'atomic_ops_jwt_secret_key_2026_super_secure_spec',
-    { expiresIn: process.env.JWT_EXPIRES_IN || '15m' }
+    { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
   );
 };
 
@@ -16,7 +16,7 @@ const generateRefreshToken = (userId) => {
   return jwt.sign(
     { id: userId },
     process.env.REFRESH_TOKEN_SECRET || 'atomic_ops_refresh_token_secret_key_2026_spec',
-    { expiresIn: process.env.REFRESH_TOKEN_EXPIRES_IN || '7d' }
+    { expiresIn: process.env.REFRESH_TOKEN_EXPIRES_IN || '30d' }
   );
 };
 

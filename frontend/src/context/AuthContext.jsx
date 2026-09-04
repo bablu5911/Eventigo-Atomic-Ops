@@ -1,10 +1,17 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
-import api, { setAccessToken, getAccessToken } from '../services/api';
+import api, { setAccessToken, getAccessToken, setRefreshToken, getRefreshToken } from '../services/api';
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(() => {
+    try {
+      const savedUser = localStorage.getItem('atomic_ops_user');
+      return savedUser ? JSON.parse(savedUser) : null;
+    } catch {
+      return null;
+    }
+  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -14,6 +21,8 @@ export const AuthProvider = ({ children }) => {
     const handleUnauthorized = () => {
       setUser(null);
       setAccessToken(null);
+      setRefreshToken(null);
+      localStorage.removeItem('atomic_ops_user');
     };
 
     window.addEventListener('auth:unauthorized', handleUnauthorized);
@@ -24,16 +33,25 @@ export const AuthProvider = ({ children }) => {
     const token = getAccessToken();
     if (!token) {
       setLoading(false);
+      setUser(null);
+      localStorage.removeItem('atomic_ops_user');
       return;
     }
     try {
       const res = await api.get('/auth/me');
-      if (res.data.success) {
+      if (res.data?.success && res.data?.user) {
         setUser(res.data.user);
+        localStorage.setItem('atomic_ops_user', JSON.stringify(res.data.user));
       }
     } catch (err) {
-      setAccessToken(null);
-      setUser(null);
+      // ONLY clear session if server explicitly returns 401 Unauthorized
+      // Never wipe login on transient network hiccups or serverless cold starts
+      if (err.response?.status === 401) {
+        setAccessToken(null);
+        setRefreshToken(null);
+        setUser(null);
+        localStorage.removeItem('atomic_ops_user');
+      }
     } finally {
       setLoading(false);
     }
@@ -44,12 +62,21 @@ export const AuthProvider = ({ children }) => {
     try {
       const res = await api.post('/auth/login', { email, password });
       if (res.data.success) {
-        setAccessToken(res.data.token);
-        setUser(res.data.user);
-        return { success: true, user: res.data.user };
+        const token = res.data.token || res.data?.data?.accessToken;
+        const refreshTokenVal = res.data.refreshToken || res.data?.data?.refreshToken;
+        const userData = res.data.user || res.data?.data?.user;
+
+        if (token) setAccessToken(token);
+        if (refreshTokenVal) setRefreshToken(refreshTokenVal);
+        if (userData) {
+          setUser(userData);
+          localStorage.setItem('atomic_ops_user', JSON.stringify(userData));
+        }
+        return { success: true, user: userData };
       }
+      return { success: false, error: res.data.message || 'Login failed' };
     } catch (err) {
-      const msg = err.response?.data?.error || 'Login failed';
+      const msg = err.response?.data?.error || err.response?.data?.message || 'Login failed';
       setError(msg);
       return { success: false, error: msg };
     }
@@ -68,10 +95,16 @@ export const AuthProvider = ({ children }) => {
 
       if (res.data?.success) {
         const token = res.data.token || res.data?.data?.accessToken;
-        const user = res.data.user || res.data?.data?.user;
+        const refreshTokenVal = res.data.refreshToken || res.data?.data?.refreshToken;
+        const userData = res.data.user || res.data?.data?.user;
+
         if (token) setAccessToken(token);
-        if (user) setUser(user);
-        return { success: true, user };
+        if (refreshTokenVal) setRefreshToken(refreshTokenVal);
+        if (userData) {
+          setUser(userData);
+          localStorage.setItem('atomic_ops_user', JSON.stringify(userData));
+        }
+        return { success: true, user: userData };
       }
 
       const msg = res.data?.error || res.data?.message || 'Registration failed';
@@ -91,6 +124,8 @@ export const AuthProvider = ({ children }) => {
       // Ignore error on logout
     }
     setAccessToken(null);
+    setRefreshToken(null);
+    localStorage.removeItem('atomic_ops_user');
     setUser(null);
   };
 
@@ -112,10 +147,13 @@ export const AuthProvider = ({ children }) => {
     try {
       const res = await api.post('/auth/google', { idToken });
       const token = res.data?.data?.accessToken || res.data?.token;
+      const refreshTokenVal = res.data?.data?.refreshToken || res.data?.refreshToken;
       const userData = res.data?.data?.user || res.data?.user;
       if (token && userData) {
         setAccessToken(token);
+        if (refreshTokenVal) setRefreshToken(refreshTokenVal);
         setUser(userData);
+        localStorage.setItem('atomic_ops_user', JSON.stringify(userData));
         return { success: true, user: userData };
       }
       return { success: false, error: 'Failed to extract user payload' };

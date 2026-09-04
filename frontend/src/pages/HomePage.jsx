@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import { useEvents, useCategories } from '../services/reactQueryHooks';
 import EventCard from '../components/EventCard';
 import SkeletonCard from '../components/SkeletonCard';
@@ -18,6 +19,20 @@ import {
 } from 'lucide-react';
 
 export default function HomePage() {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (user?.role === 'superadmin') {
+      navigate('/superadmin', { replace: true });
+    } else if (user?.role === 'admin') {
+      navigate('/admin', { replace: true });
+    } else if (user?.role === 'organizer') {
+      navigate('/organizer', { replace: true });
+    } else if (user?.role === 'staff') {
+      navigate('/door-checker', { replace: true });
+    }
+  }, [user, navigate]);
   const [search, setSearch] = useState('');
   const [city, setCity] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');

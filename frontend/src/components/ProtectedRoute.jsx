@@ -22,6 +22,10 @@ export default function ProtectedRoute({ children, allowedRoles }) {
   }
 
   if (allowedRoles && !allowedRoles.includes(user.role)) {
+    if (user.role === 'superadmin') return <Navigate to="/superadmin" replace />;
+    if (user.role === 'admin') return <Navigate to="/admin" replace />;
+    if (user.role === 'organizer') return <Navigate to="/organizer" replace />;
+    if (user.role === 'staff') return <Navigate to="/door-checker" replace />;
     return <Navigate to="/" replace />;
   }
 

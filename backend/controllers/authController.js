@@ -16,10 +16,12 @@ const register = async (req, res) => {
     success: true,
     message: 'Account created successfully',
     token: result.accessToken,
+    refreshToken: result.refreshToken,
     user: result.user,
     data: {
       user: result.user,
-      accessToken: result.accessToken
+      accessToken: result.accessToken,
+      refreshToken: result.refreshToken
     }
   });
 };
@@ -45,10 +47,12 @@ const login = async (req, res) => {
     success: true,
     requires2FA: false,
     token: result.accessToken,
+    refreshToken: result.refreshToken,
     user: result.user,
     data: {
       user: result.user,
-      accessToken: result.accessToken
+      accessToken: result.accessToken,
+      refreshToken: result.refreshToken
     },
     message: 'Login successful'
   });
@@ -79,10 +83,12 @@ const googleLogin = async (req, res) => {
       success: true,
       message: 'Google authentication successful',
       token: newAccessToken,
+      refreshToken: newRefreshToken,
       user: userPayload,
       data: {
         user: userPayload,
-        accessToken: newAccessToken
+        accessToken: newAccessToken,
+        refreshToken: newRefreshToken
       }
     });
   }
@@ -93,10 +99,12 @@ const googleLogin = async (req, res) => {
     success: true,
     message: 'Google authentication successful',
     token: result.accessToken,
+    refreshToken: result.refreshToken,
     user: result.user,
     data: {
       user: result.user,
-      accessToken: result.accessToken
+      accessToken: result.accessToken,
+      refreshToken: result.refreshToken
     }
   });
 };
@@ -108,6 +116,7 @@ const appleLogin = async (req, res) => {
   res.status(200).json({
     success: true,
     token: result.accessToken,
+    refreshToken: result.refreshToken,
     user: result.user
   });
 };
@@ -127,7 +136,13 @@ const verify2FA = async (req, res) => {
   res.status(200).json({
     success: true,
     token: result.accessToken,
-    user: result.user
+    refreshToken: result.refreshToken,
+    user: result.user,
+    data: {
+      user: result.user,
+      accessToken: result.accessToken,
+      refreshToken: result.refreshToken
+    }
   });
 };
 

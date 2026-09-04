@@ -15,6 +15,7 @@ const api = axios.create({
 });
 
 let accessTokenInMemory = localStorage.getItem('atomic_ops_token') || null;
+let refreshTokenInMemory = localStorage.getItem('atomic_ops_refresh_token') || null;
 
 export const setAccessToken = (token) => {
   accessTokenInMemory = token;
@@ -27,6 +28,19 @@ export const setAccessToken = (token) => {
 
 export const getAccessToken = () => {
   return accessTokenInMemory || localStorage.getItem('atomic_ops_token');
+};
+
+export const setRefreshToken = (token) => {
+  refreshTokenInMemory = token;
+  if (token) {
+    localStorage.setItem('atomic_ops_refresh_token', token);
+  } else {
+    localStorage.removeItem('atomic_ops_refresh_token');
+  }
+};
+
+export const getRefreshToken = () => {
+  return refreshTokenInMemory || localStorage.getItem('atomic_ops_refresh_token');
 };
 
 api.interceptors.request.use(
@@ -75,15 +89,25 @@ api.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        const { data } = await axios.post(`${API_BASE_URL}/auth/refresh`, {}, { withCredentials: true });
+        const storedRefreshToken = getRefreshToken();
+        const { data } = await axios.post(
+          `${API_BASE_URL}/auth/refresh`,
+          { refreshToken: storedRefreshToken },
+          { withCredentials: true }
+        );
         const newAccessToken = data.token;
         setAccessToken(newAccessToken);
+        if (data.refreshToken) {
+          setRefreshToken(data.refreshToken);
+        }
         processQueue(null, newAccessToken);
         originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
         return api(originalRequest);
       } catch (refreshErr) {
         processQueue(refreshErr, null);
         setAccessToken(null);
+        setRefreshToken(null);
+        localStorage.removeItem('atomic_ops_user');
         window.dispatchEvent(new Event('auth:unauthorized'));
         return Promise.reject(refreshErr);
       } finally {

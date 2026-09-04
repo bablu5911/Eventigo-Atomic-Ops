@@ -40,111 +40,226 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
         <div className="relative flex items-center justify-between h-16 md:h-20">
           
-          {/* Logo & Brand */}
-          <Link to="/" className="flex items-center space-x-2.5 group">
-            <div className="w-8 h-8 rounded-xl bg-emerald-500 flex items-center justify-center text-neutral-950 font-black text-lg shadow-md shadow-emerald-500/30 group-hover:scale-105 transition-transform">
-              E
+          {/* Logo & Brand (Links to Role Home) */}
+          <Link
+            to={
+              user?.role === 'superadmin' ? '/superadmin' :
+              user?.role === 'admin' ? '/admin' :
+              user?.role === 'organizer' ? '/organizer' :
+              user?.role === 'staff' ? '/door-checker' : '/'
+            }
+            className="flex items-center space-x-2.5 group"
+          >
+            <div className={`w-8 h-8 rounded-xl flex items-center justify-center text-neutral-950 font-black text-lg shadow-md transition-transform group-hover:scale-105 ${
+              user?.role === 'superadmin' ? 'bg-amber-400 shadow-amber-500/30' :
+              user?.role === 'admin' ? 'bg-purple-400 shadow-purple-500/30' :
+              user?.role === 'staff' ? 'bg-cyan-400 shadow-cyan-500/30' :
+              'bg-emerald-500 shadow-emerald-500/30'
+            }`}>
+              {user?.role === 'superadmin' ? '👑' : user?.role === 'admin' ? '🛡️' : user?.role === 'staff' ? '🚪' : 'E'}
             </div>
-            <span className="text-2xl font-extrabold tracking-tight text-white font-helvetica-neue">
-              Eventigo
-            </span>
+            <div className="flex flex-col">
+              <span className="text-xl md:text-2xl font-extrabold tracking-tight text-white font-helvetica-neue leading-none">
+                Eventigo
+              </span>
+              {user?.role && (
+                <span className={`text-[9px] uppercase font-mono tracking-widest font-bold mt-0.5 ${
+                  user.role === 'superadmin' ? 'text-amber-400' :
+                  user.role === 'admin' ? 'text-purple-400' :
+                  user.role === 'organizer' ? 'text-emerald-400' :
+                  user.role === 'staff' ? 'text-cyan-400' : 'text-slate-400'
+                }`}>
+                  {user.role === 'superadmin' ? 'Super Admin Deck' :
+                   user.role === 'admin' ? 'Operations Admin' :
+                   user.role === 'organizer' ? 'Organizer Studio' :
+                   user.role === 'staff' ? 'Gate Turnstile Staff' : 'Attendee Portal'}
+                </span>
+              )}
+            </div>
           </Link>
 
-          {/* Navigation Links based on User Role */}
-          <nav className="hidden md:flex items-center space-x-3 text-sm font-medium font-helvetica-neue">
-            <Link
-              to="/"
-              className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-full transition-colors ${
-                isActive('/') ? 'text-emerald-400 font-bold bg-white/10 border border-emerald-500/30 shadow-sm' : 'text-slate-300 hover:text-white hover:bg-white/5'
-              }`}
-            >
-              <Calendar className="w-4 h-4 text-emerald-400" />
-              <span>Events</span>
-            </Link>
-
-            {user && (
-              <Link
-                to="/my-bookings"
-                className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-full transition-colors ${
-                  isActive('/my-bookings') ? 'text-emerald-400 font-bold bg-white/10 border border-emerald-500/30 shadow-sm' : 'text-slate-300 hover:text-white hover:bg-white/5'
-                }`}
-              >
-                <Ticket className="w-4 h-4 text-emerald-400" />
-                <span>My Bookings</span>
-              </Link>
-            )}
-
-            {user && (
-              <Link
-                to="/organizer"
-                className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-full transition-colors ${
-                  isActive('/organizer') ? 'text-emerald-400 font-bold bg-white/10 border border-emerald-500/30 shadow-sm' : 'text-slate-300 hover:text-white hover:bg-white/5'
-                }`}
-              >
-                <Cpu className="w-4 h-4 text-emerald-400" />
-                <span>Organizer Studio</span>
-              </Link>
-            )}
-
-            {(user?.role === 'staff' || user?.role === 'organizer' || user?.role === 'admin') && (
-              <Link
-                to="/door-scanner"
-                className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-full transition-colors ${
-                  isActive('/door-scanner') ? 'text-emerald-400 font-bold bg-white/10 border border-emerald-500/30 shadow-sm' : 'text-slate-300 hover:text-white hover:bg-white/5'
-                }`}
-              >
-                <QrCode className="w-4 h-4 text-emerald-400" />
-                <span>Live Scanner</span>
-              </Link>
-            )}
-
+          {/* Navigation Links STRICTLY based on User Role */}
+          <nav className="hidden md:flex items-center space-x-2.5 text-sm font-medium font-helvetica-neue">
+            {/* 1. SUPER ADMIN EXCLUSIVE LINKS */}
             {user?.role === 'superadmin' && (
-              <Link
-                to="/superadmin"
-                className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-full transition-colors ${
-                  isActive('/superadmin') ? 'text-amber-300 font-bold bg-amber-500/20 border border-amber-500/40 shadow-sm' : 'text-amber-300/80 hover:text-amber-200 hover:bg-amber-500/10'
-                }`}
-              >
-                <Crown className="w-4 h-4 text-amber-400" />
-                <span>Venue Financials</span>
-              </Link>
+              <>
+                <Link
+                  to="/superadmin"
+                  className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-full transition-colors ${
+                    isActive('/superadmin') ? 'text-amber-300 font-bold bg-amber-500/20 border border-amber-500/40 shadow-sm' : 'text-amber-300/80 hover:text-amber-200 hover:bg-amber-500/10'
+                  }`}
+                >
+                  <Crown className="w-4 h-4 text-amber-400" />
+                  <span>Venue Controls & Freeze</span>
+                </Link>
+
+                <Link
+                  to="/admin"
+                  className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-full transition-colors ${
+                    isActive('/admin') ? 'text-purple-300 font-bold bg-purple-500/20 border border-purple-500/40 shadow-sm' : 'text-slate-300 hover:text-purple-200 hover:bg-white/5'
+                  }`}
+                >
+                  <Shield className="w-4 h-4 text-purple-400" />
+                  <span>Operations Console</span>
+                </Link>
+
+                <Link
+                  to="/chat"
+                  className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-full transition-colors ${
+                    isActive('/chat') ? 'text-emerald-400 font-bold bg-white/10 border border-emerald-500/30 shadow-sm' : 'text-slate-300 hover:text-white hover:bg-white/5'
+                  }`}
+                >
+                  <MessageSquare className="w-4 h-4 text-emerald-400" />
+                  <span>Team Chat</span>
+                </Link>
+              </>
             )}
 
-            {(user?.role === 'admin' || user?.role === 'superadmin') && (
-              <Link
-                to="/admin"
-                className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-full transition-colors ${
-                  isActive('/admin') ? 'text-purple-300 font-bold bg-purple-500/20 border border-purple-500/40 shadow-sm' : 'text-purple-300/80 hover:text-purple-200 hover:bg-purple-500/10'
-                }`}
-              >
-                <Shield className="w-4 h-4 text-purple-400" />
-                <span>Operations & Staff</span>
-              </Link>
+            {/* 2. ADMIN EXCLUSIVE LINKS */}
+            {user?.role === 'admin' && (
+              <>
+                <Link
+                  to="/admin"
+                  className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-full transition-colors ${
+                    isActive('/admin') ? 'text-purple-300 font-bold bg-purple-500/20 border border-purple-500/40 shadow-sm' : 'text-purple-300/80 hover:text-purple-200 hover:bg-purple-500/10'
+                  }`}
+                >
+                  <Shield className="w-4 h-4 text-purple-400" />
+                  <span>Operations & Staff</span>
+                </Link>
+
+                <Link
+                  to="/door-scanner"
+                  className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-full transition-colors ${
+                    isActive('/door-scanner') ? 'text-emerald-400 font-bold bg-white/10 border border-emerald-500/30 shadow-sm' : 'text-slate-300 hover:text-white hover:bg-white/5'
+                  }`}
+                >
+                  <QrCode className="w-4 h-4 text-emerald-400" />
+                  <span>Door Scanner</span>
+                </Link>
+
+                <Link
+                  to="/chat"
+                  className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-full transition-colors ${
+                    isActive('/chat') ? 'text-emerald-400 font-bold bg-white/10 border border-emerald-500/30 shadow-sm' : 'text-slate-300 hover:text-white hover:bg-white/5'
+                  }`}
+                >
+                  <MessageSquare className="w-4 h-4 text-emerald-400" />
+                  <span>Team Chat</span>
+                </Link>
+              </>
             )}
 
-            {(user?.role === 'staff' || user?.role === 'organizer' || user?.role === 'admin' || user?.role === 'superadmin') && (
-              <Link
-                to="/chat"
-                className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-full transition-colors ${
-                  isActive('/chat') ? 'text-emerald-400 font-bold bg-white/10 border border-emerald-500/30 shadow-sm' : 'text-slate-300 hover:text-white hover:bg-white/5'
-                }`}
-              >
-                <MessageSquare className="w-4 h-4 text-emerald-400" />
-                <span>Team Chat</span>
-              </Link>
+            {/* 3. ORGANIZER EXCLUSIVE LINKS */}
+            {user?.role === 'organizer' && (
+              <>
+                <Link
+                  to="/organizer"
+                  className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-full transition-colors ${
+                    isActive('/organizer') ? 'text-emerald-400 font-bold bg-white/10 border border-emerald-500/30 shadow-sm' : 'text-slate-300 hover:text-white hover:bg-white/5'
+                  }`}
+                >
+                  <Cpu className="w-4 h-4 text-emerald-400" />
+                  <span>Organizer Studio</span>
+                </Link>
+
+                <Link
+                  to="/door-scanner"
+                  className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-full transition-colors ${
+                    isActive('/door-scanner') ? 'text-emerald-400 font-bold bg-white/10 border border-emerald-500/30 shadow-sm' : 'text-slate-300 hover:text-white hover:bg-white/5'
+                  }`}
+                >
+                  <QrCode className="w-4 h-4 text-emerald-400" />
+                  <span>Gate Scanner</span>
+                </Link>
+
+                <Link
+                  to="/chat"
+                  className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-full transition-colors ${
+                    isActive('/chat') ? 'text-emerald-400 font-bold bg-white/10 border border-emerald-500/30 shadow-sm' : 'text-slate-300 hover:text-white hover:bg-white/5'
+                  }`}
+                >
+                  <MessageSquare className="w-4 h-4 text-emerald-400" />
+                  <span>Team Chat</span>
+                </Link>
+              </>
+            )}
+
+            {/* 4. GATE STAFF EXCLUSIVE LINKS */}
+            {user?.role === 'staff' && (
+              <>
+                <Link
+                  to="/door-checker"
+                  className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-full transition-colors ${
+                    isActive('/door-checker') ? 'text-cyan-300 font-bold bg-cyan-500/20 border border-cyan-500/40 shadow-sm' : 'text-cyan-300/80 hover:text-cyan-200 hover:bg-cyan-500/10'
+                  }`}
+                >
+                  <Shield className="w-4 h-4 text-cyan-400" />
+                  <span>Turnstile Check-In</span>
+                </Link>
+
+                <Link
+                  to="/door-scanner"
+                  className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-full transition-colors ${
+                    isActive('/door-scanner') ? 'text-emerald-400 font-bold bg-white/10 border border-emerald-500/30 shadow-sm' : 'text-slate-300 hover:text-white hover:bg-white/5'
+                  }`}
+                >
+                  <QrCode className="w-4 h-4 text-emerald-400" />
+                  <span>Camera Scanner</span>
+                </Link>
+
+                <Link
+                  to="/chat"
+                  className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-full transition-colors ${
+                    isActive('/chat') ? 'text-emerald-400 font-bold bg-white/10 border border-emerald-500/30 shadow-sm' : 'text-slate-300 hover:text-white hover:bg-white/5'
+                  }`}
+                >
+                  <MessageSquare className="w-4 h-4 text-emerald-400" />
+                  <span>Staff Chat</span>
+                </Link>
+              </>
+            )}
+
+            {/* 5. ATTENDEE & GUEST LINKS */}
+            {(!user || user?.role === 'attendee') && (
+              <>
+                <Link
+                  to="/"
+                  className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-full transition-colors ${
+                    isActive('/') ? 'text-emerald-400 font-bold bg-white/10 border border-emerald-500/30 shadow-sm' : 'text-slate-300 hover:text-white hover:bg-white/5'
+                  }`}
+                >
+                  <Calendar className="w-4 h-4 text-emerald-400" />
+                  <span>Events</span>
+                </Link>
+
+                {user && (
+                  <Link
+                    to="/my-bookings"
+                    className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-full transition-colors ${
+                      isActive('/my-bookings') ? 'text-emerald-400 font-bold bg-white/10 border border-emerald-500/30 shadow-sm' : 'text-slate-300 hover:text-white hover:bg-white/5'
+                    }`}
+                  >
+                    <Ticket className="w-4 h-4 text-emerald-400" />
+                    <span>My Bookings &amp; 3D Passes</span>
+                  </Link>
+                )}
+              </>
             )}
           </nav>
 
-          {/* User Auth & Create Event Actions */}
+          {/* User Auth & Actions */}
           <div className="hidden md:flex items-center space-x-3 font-helvetica-neue">
-            {/* Direct Create Event Quick Action */}
-            <Link
-              to="/organizer"
-              className="flex items-center space-x-1.5 px-4 py-2 rounded-full bg-emerald-500 hover:bg-emerald-400 text-neutral-950 font-bold text-xs uppercase tracking-wider transition-all shadow-md shadow-emerald-500/20 active:scale-95"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              <span>Create Event</span>
-            </Link>
+            {/* Create Event button ONLY for Organizer */}
+            {user?.role === 'organizer' && (
+              <Link
+                to="/organizer"
+                className="flex items-center space-x-1.5 px-4 py-2 rounded-full bg-emerald-500 hover:bg-emerald-400 text-neutral-950 font-bold text-xs uppercase tracking-wider transition-all shadow-md shadow-emerald-500/20 active:scale-95"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>Create Event</span>
+              </Link>
+            )}
 
             {user ? (
               <div className="flex items-center space-x-2">
@@ -221,7 +336,7 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* Mobile overlay */}
+      {/* Mobile overlay - strictly role filtered */}
       <div
         className={`md:hidden fixed inset-0 bg-neutral-950/95 backdrop-blur-xl z-40 transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
           mobileOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
@@ -232,43 +347,87 @@ export default function Navbar() {
             mobileOpen ? 'translate-y-0 opacity-100' : '-translate-y-8 opacity-0'
           }`}
         >
-          <Link to="/" onClick={closeMobileMenu} className="text-xl font-bold text-white">
-            Events
-          </Link>
-          {user && (
-            <Link to="/my-bookings" onClick={closeMobileMenu} className="text-xl font-bold text-white">
-              My Bookings
-            </Link>
-          )}
-          <Link to="/organizer" onClick={closeMobileMenu} className="text-xl font-bold text-emerald-400 flex items-center space-x-2">
-            <Plus className="w-5 h-5" />
-            <span>Create Event</span>
-          </Link>
-          {user && (
-            <Link to="/organizer" onClick={closeMobileMenu} className="text-xl font-bold text-white">
-              Organizer Studio
-            </Link>
-          )}
-          {(user?.role === 'staff' || user?.role === 'organizer' || user?.role === 'admin' || user?.role === 'superadmin') && (
-            <Link to="/door-scanner" onClick={closeMobileMenu} className="text-xl font-bold text-white">
-              Live Scanner
-            </Link>
-          )}
+          {/* SUPER ADMIN MOBILE */}
           {user?.role === 'superadmin' && (
-            <Link to="/superadmin" onClick={closeMobileMenu} className="text-xl font-bold text-amber-300 flex items-center space-x-2">
-              <Crown className="w-5 h-5 text-amber-400" />
-              <span>Venue Financials</span>
-            </Link>
+            <>
+              <Link to="/superadmin" onClick={closeMobileMenu} className="text-xl font-bold text-amber-300 flex items-center space-x-2">
+                <Crown className="w-5 h-5 text-amber-400" />
+                <span>Venue Controls &amp; Freeze</span>
+              </Link>
+              <Link to="/admin" onClick={closeMobileMenu} className="text-xl font-bold text-purple-300 flex items-center space-x-2">
+                <Shield className="w-5 h-5 text-purple-400" />
+                <span>Operations Console</span>
+              </Link>
+              <Link to="/chat" onClick={closeMobileMenu} className="text-xl font-bold text-white">
+                Team Chat
+              </Link>
+            </>
           )}
-          {(user?.role === 'admin' || user?.role === 'superadmin') && (
-            <Link to="/admin" onClick={closeMobileMenu} className="text-xl font-bold text-purple-300">
-              Operations & Staff
-            </Link>
+
+          {/* ADMIN MOBILE */}
+          {user?.role === 'admin' && (
+            <>
+              <Link to="/admin" onClick={closeMobileMenu} className="text-xl font-bold text-purple-300 flex items-center space-x-2">
+                <Shield className="w-5 h-5 text-purple-400" />
+                <span>Operations &amp; Staff</span>
+              </Link>
+              <Link to="/door-scanner" onClick={closeMobileMenu} className="text-xl font-bold text-emerald-400 flex items-center space-x-2">
+                <QrCode className="w-5 h-5" />
+                <span>Door Scanner</span>
+              </Link>
+              <Link to="/chat" onClick={closeMobileMenu} className="text-xl font-bold text-white">
+                Team Chat
+              </Link>
+            </>
           )}
-          {(user?.role === 'staff' || user?.role === 'organizer' || user?.role === 'admin' || user?.role === 'superadmin') && (
-            <Link to="/chat" onClick={closeMobileMenu} className="text-xl font-bold text-white">
-              Team Chat
-            </Link>
+
+          {/* ORGANIZER MOBILE */}
+          {user?.role === 'organizer' && (
+            <>
+              <Link to="/organizer" onClick={closeMobileMenu} className="text-xl font-bold text-emerald-400 flex items-center space-x-2">
+                <Plus className="w-5 h-5" />
+                <span>Create Event</span>
+              </Link>
+              <Link to="/organizer" onClick={closeMobileMenu} className="text-xl font-bold text-white">
+                Organizer Studio
+              </Link>
+              <Link to="/door-scanner" onClick={closeMobileMenu} className="text-xl font-bold text-white">
+                Gate Scanner
+              </Link>
+              <Link to="/chat" onClick={closeMobileMenu} className="text-xl font-bold text-white">
+                Team Chat
+              </Link>
+            </>
+          )}
+
+          {/* STAFF MOBILE */}
+          {user?.role === 'staff' && (
+            <>
+              <Link to="/door-checker" onClick={closeMobileMenu} className="text-xl font-bold text-cyan-300 flex items-center space-x-2">
+                <Shield className="w-5 h-5 text-cyan-400" />
+                <span>Turnstile Check-In</span>
+              </Link>
+              <Link to="/door-scanner" onClick={closeMobileMenu} className="text-xl font-bold text-white">
+                Live Scanner
+              </Link>
+              <Link to="/chat" onClick={closeMobileMenu} className="text-xl font-bold text-white">
+                Staff Chat
+              </Link>
+            </>
+          )}
+
+          {/* ATTENDEE & GUEST MOBILE */}
+          {(!user || user?.role === 'attendee') && (
+            <>
+              <Link to="/" onClick={closeMobileMenu} className="text-xl font-bold text-white">
+                Discover Events
+              </Link>
+              {user && (
+                <Link to="/my-bookings" onClick={closeMobileMenu} className="text-xl font-bold text-white">
+                  My Bookings &amp; 3D Passes
+                </Link>
+              )}
+            </>
           )}
 
           <div className="pt-4 flex flex-col items-center gap-3 w-64">

@@ -27,8 +27,20 @@ const broadcastRoutes = require('./routes/broadcastRoutes');
 
 const app = express();
 
-// Connect Database
-connectDB();
+// Connect Database with request guarantee for serverless/cold starts
+let dbPromise = null;
+const ensureDB = async (req, res, next) => {
+  try {
+    if (!dbPromise) {
+      dbPromise = connectDB();
+    }
+    await dbPromise;
+    next();
+  } catch (err) {
+    next(err);
+  }
+};
+app.use(ensureDB);
 
 // Global Middlewares
 app.use(helmet({ crossOriginResourcePolicy: false }));

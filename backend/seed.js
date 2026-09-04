@@ -38,9 +38,10 @@ const seedData = async (skipConnect = false) => {
     await StaffAssignment.deleteMany();
     console.log('[Seed] Cleared existing collections.');
 
-    // 1. Create Users
+    // 1. Create Users with deterministic IDs so tokens survive cold starts
     console.log('[Seed] Creating default requested accounts (password: 123)...');
     const superadminUser = await User.create({
+      _id: '660000000000000000000001',
       name: 'Super Admin',
       username: 'superadmin1',
       email: 'superadmin1@eventigo.com',
@@ -50,6 +51,7 @@ const seedData = async (skipConnect = false) => {
     });
 
     const adminUser = await User.create({
+      _id: '660000000000000000000002',
       name: 'System Admin',
       username: 'admin1',
       email: 'admin1@eventigo.com',
@@ -59,6 +61,7 @@ const seedData = async (skipConnect = false) => {
     });
 
     const organizerUser = await User.create({
+      _id: '660000000000000000000003',
       name: 'Event Organizer',
       username: 'organizer1',
       email: 'organizer1@eventigo.com',
@@ -68,6 +71,7 @@ const seedData = async (skipConnect = false) => {
     });
 
     const staffUser = await User.create({
+      _id: '660000000000000000000004',
       name: 'Door Staff',
       username: 'staff1',
       email: 'staff1@eventigo.com',
@@ -77,6 +81,7 @@ const seedData = async (skipConnect = false) => {
     });
 
     const staffUser2 = await User.create({
+      _id: '660000000000000000000006',
       name: 'Sarah Gate Specialist',
       username: 'staff2',
       email: 'gate2@eventigo.com',
@@ -86,6 +91,7 @@ const seedData = async (skipConnect = false) => {
     });
 
     const attendeeUser = await User.create({
+      _id: '660000000000000000000005',
       name: 'Standard User',
       username: 'user1',
       email: 'user1@eventigo.com',
@@ -96,11 +102,11 @@ const seedData = async (skipConnect = false) => {
 
     // Also seed legacy aliases for backward compatibility
     await User.create([
-      { name: 'Super Admin Legacy', email: 'superadmin@atomicops.com', password: '123', role: 'superadmin', status: 'active' },
-      { name: 'Admin Legacy', email: 'admin@atomicops.com', password: '123', role: 'admin', status: 'active' },
-      { name: 'Organizer Legacy', email: 'organizer@atomicops.com', password: '123', role: 'organizer', status: 'active' },
-      { name: 'Staff Legacy', email: 'staff@atomicops.com', password: '123', role: 'staff', status: 'active' },
-      { name: 'Attendee Legacy', email: 'attendee@atomicops.com', password: '123', role: 'attendee', status: 'active' }
+      { _id: '660000000000000000000011', name: 'Super Admin Legacy', email: 'superadmin@atomicops.com', password: '123', role: 'superadmin', status: 'active' },
+      { _id: '660000000000000000000012', name: 'Admin Legacy', email: 'admin@atomicops.com', password: '123', role: 'admin', status: 'active' },
+      { _id: '660000000000000000000013', name: 'Organizer Legacy', email: 'organizer@atomicops.com', password: '123', role: 'organizer', status: 'active' },
+      { _id: '660000000000000000000014', name: 'Staff Legacy', email: 'staff@atomicops.com', password: '123', role: 'staff', status: 'active' },
+      { _id: '660000000000000000000015', name: 'Attendee Legacy', email: 'attendee@atomicops.com', password: '123', role: 'attendee', status: 'active' }
     ]);
 
     console.log(`[Seed] Created Users: superadmin1, admin1, organizer1, staff1, user1 (all with password: 123)`);

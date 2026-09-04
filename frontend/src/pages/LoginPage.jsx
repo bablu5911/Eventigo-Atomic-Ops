@@ -5,7 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
-import api, { setAccessToken } from '../services/api';
+import api, { setAccessToken, setRefreshToken } from '../services/api';
 import SocialAuthModal from '../components/SocialAuthModal';
 import SocialLoginButtons from '../components/SocialLoginButtons';
 import { Triangle, LogIn, Key, Mail, ShieldCheck, ArrowRight } from 'lucide-react';
@@ -54,8 +54,13 @@ export default function LoginPage() {
         toast.success('Credentials verified. Please enter 6-digit OTP code.');
       } else if (res.data.token || res.data?.data?.accessToken) {
         const token = res.data.token || res.data?.data?.accessToken;
+        const refreshTokenVal = res.data.refreshToken || res.data?.data?.refreshToken;
         const user = res.data.user || res.data?.data?.user;
         setAccessToken(token);
+        if (refreshTokenVal) setRefreshToken(refreshTokenVal);
+        if (user) {
+          localStorage.setItem('atomic_ops_user', JSON.stringify(user));
+        }
         await checkLoggedIn();
         toast.success(`Authenticated successfully as ${user?.name || 'User'} (${user?.role?.toUpperCase() || ''})`);
 
@@ -84,15 +89,22 @@ export default function LoginPage() {
     try {
       const res = await api.post('/auth/verify-2fa', { tempToken, otp: otpCode });
       if (res.data.success) {
-        setAccessToken(res.data.token);
+        const token = res.data.token || res.data?.data?.accessToken;
+        const refreshTokenVal = res.data.refreshToken || res.data?.data?.refreshToken;
+        const user = res.data.user || res.data?.data?.user;
+        setAccessToken(token);
+        if (refreshTokenVal) setRefreshToken(refreshTokenVal);
+        if (user) {
+          localStorage.setItem('atomic_ops_user', JSON.stringify(user));
+        }
         await checkLoggedIn();
-        toast.success(`Authenticated successfully as ${res.data.user.name} (${res.data.user.role.toUpperCase()})`);
+        toast.success(`Authenticated successfully as ${user?.name || 'User'} (${user?.role?.toUpperCase() || ''})`);
         
         // Redirect based on role
-        if (res.data.user.role === 'superadmin') navigate('/superadmin');
-        else if (res.data.user.role === 'admin') navigate('/admin');
-        else if (res.data.user.role === 'organizer') navigate('/organizer');
-        else if (res.data.user.role === 'staff') navigate('/door-checker');
+        if (user?.role === 'superadmin') navigate('/superadmin');
+        else if (user?.role === 'admin') navigate('/admin');
+        else if (user?.role === 'organizer') navigate('/organizer');
+        else if (user?.role === 'staff') navigate('/door-checker');
         else navigate(from, { replace: true });
       }
     } catch (err) {

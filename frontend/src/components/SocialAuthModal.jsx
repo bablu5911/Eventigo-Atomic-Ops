@@ -15,7 +15,7 @@ import {
   AlertCircle,
   Check
 } from 'lucide-react';
-import api, { setAccessToken } from '../services/api';
+import api, { setAccessToken, setRefreshToken } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 
@@ -175,11 +175,16 @@ export default function SocialAuthModal({ isOpen, onClose, provider = 'google', 
               accessToken: tokenResponse.access_token
             });
             if (res.data.success) {
-              setAccessToken(res.data.token);
+              const token = res.data.token || res.data?.data?.accessToken;
+              const refreshTokenVal = res.data.refreshToken || res.data?.data?.refreshToken;
+              const user = res.data.user || res.data?.data?.user;
+              setAccessToken(token);
+              if (refreshTokenVal) setRefreshToken(refreshTokenVal);
+              if (user) localStorage.setItem('atomic_ops_user', JSON.stringify(user));
               await checkLoggedIn();
-              toast.success(`Google Account Verified! Welcome, ${res.data.user.name}`);
+              toast.success(`Google Account Verified! Welcome, ${user?.name || 'User'}`);
               onClose();
-              if (onSuccess) onSuccess(res.data.user);
+              if (onSuccess) onSuccess(user);
             }
           } catch (apiErr) {
             toast.error(apiErr.response?.data?.error || 'Failed to verify Google access token');
@@ -218,11 +223,16 @@ export default function SocialAuthModal({ isOpen, onClose, provider = 'google', 
             user: data.user
           });
           if (res.data.success) {
-            setAccessToken(res.data.token);
+            const token = res.data.token || res.data?.data?.accessToken;
+            const refreshTokenVal = res.data.refreshToken || res.data?.data?.refreshToken;
+            const user = res.data.user || res.data?.data?.user;
+            setAccessToken(token);
+            if (refreshTokenVal) setRefreshToken(refreshTokenVal);
+            if (user) localStorage.setItem('atomic_ops_user', JSON.stringify(user));
             await checkLoggedIn();
-            toast.success(`Apple ID Verified! Welcome, ${res.data.user.name}`);
+            toast.success(`Apple ID Verified! Welcome, ${user?.name || 'User'}`);
             onClose();
-            if (onSuccess) onSuccess(res.data.user);
+            if (onSuccess) onSuccess(user);
           }
           return;
         }
@@ -249,11 +259,16 @@ export default function SocialAuthModal({ isOpen, onClose, provider = 'google', 
           identityToken: `apple_verified_jwt_${Date.now()}`
         });
         if (res.data.success) {
-          setAccessToken(res.data.token);
+          const token = res.data.token || res.data?.data?.accessToken;
+          const refreshTokenVal = res.data.refreshToken || res.data?.data?.refreshToken;
+          const user = res.data.user || res.data?.data?.user;
+          setAccessToken(token);
+          if (refreshTokenVal) setRefreshToken(refreshTokenVal);
+          if (user) localStorage.setItem('atomic_ops_user', JSON.stringify(user));
           await checkLoggedIn();
-          toast.success(`Apple ID Verified with Biometrics! Welcome, ${res.data.user.name}`);
+          toast.success(`Apple ID Verified with Biometrics! Welcome, ${user?.name || 'User'}`);
           onClose();
-          if (onSuccess) onSuccess(res.data.user);
+          if (onSuccess) onSuccess(user);
         }
       } catch (err) {
         toast.error(err.response?.data?.error || 'Apple ID verification failed');
@@ -271,11 +286,16 @@ export default function SocialAuthModal({ isOpen, onClose, provider = 'google', 
       if (provider === 'google') {
         const res = await api.post('/auth/google', { email, name });
         if (res.data.success) {
-          setAccessToken(res.data.token);
+          const token = res.data.token || res.data?.data?.accessToken;
+          const refreshTokenVal = res.data.refreshToken || res.data?.data?.refreshToken;
+          const user = res.data.user || res.data?.data?.user;
+          setAccessToken(token);
+          if (refreshTokenVal) setRefreshToken(refreshTokenVal);
+          if (user) localStorage.setItem('atomic_ops_user', JSON.stringify(user));
           await checkLoggedIn();
-          toast.success(`Google Verified! Welcome, ${res.data.user.name}`);
+          toast.success(`Google Verified! Welcome, ${user?.name || 'User'}`);
           onClose();
-          if (onSuccess) onSuccess(res.data.user);
+          if (onSuccess) onSuccess(user);
         }
       } else {
         setBiometricScanning(true);
@@ -289,11 +309,16 @@ export default function SocialAuthModal({ isOpen, onClose, provider = 'google', 
               name: name || 'Apple Verified Attendee'
             });
             if (res.data.success) {
-              setAccessToken(res.data.token);
+              const token = res.data.token || res.data?.data?.accessToken;
+              const refreshTokenVal = res.data.refreshToken || res.data?.data?.refreshToken;
+              const user = res.data.user || res.data?.data?.user;
+              setAccessToken(token);
+              if (refreshTokenVal) setRefreshToken(refreshTokenVal);
+              if (user) localStorage.setItem('atomic_ops_user', JSON.stringify(user));
               await checkLoggedIn();
-              toast.success(`Apple ID Verified! Welcome, ${res.data.user.name}`);
+              toast.success(`Apple ID Verified! Welcome, ${user?.name || 'User'}`);
               onClose();
-              if (onSuccess) onSuccess(res.data.user);
+              if (onSuccess) onSuccess(user);
             }
           } catch (err) {
             toast.error(err.response?.data?.error || 'Apple ID verification failed');

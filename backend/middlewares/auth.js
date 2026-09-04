@@ -20,7 +20,24 @@ const auth = async (req, res, next) => {
       process.env.JWT_SECRET || 'atomic_ops_jwt_secret_key_2026_super_secure_spec'
     );
 
-    const user = await User.findById(decoded.id);
+    let user = await User.findById(decoded.id);
+    if (!user && decoded.email) {
+      user = await User.findOne({ email: decoded.email.toLowerCase() });
+    }
+
+    // Auto-rehydrate user if token is valid and contains user credentials (prevents cold-start logout)
+    if (!user && decoded.email && decoded.role) {
+      user = await User.create({
+        _id: decoded.id,
+        name: decoded.name || 'User',
+        email: decoded.email.toLowerCase(),
+        username: decoded.username || decoded.email.split('@')[0],
+        role: decoded.role || 'attendee',
+        password: '123',
+        status: 'active'
+      });
+    }
+
     if (!user) {
       return next(new ApiError(401, 'User not found or token invalid'));
     }
@@ -50,7 +67,10 @@ const optionalAuth = async (req, res, next) => {
         token,
         process.env.JWT_SECRET || 'atomic_ops_jwt_secret_key_2026_super_secure_spec'
       );
-      const user = await User.findById(decoded.id);
+      let user = await User.findById(decoded.id);
+      if (!user && decoded.email) {
+        user = await User.findOne({ email: decoded.email.toLowerCase() });
+      }
       if (user) {
         req.user = user;
       }

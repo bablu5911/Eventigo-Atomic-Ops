@@ -64,8 +64,8 @@ const googleLogin = async (req, res) => {
 
   if (tokenToVerify) {
     const userDoc = await authService.verifyAndLoginGoogle(tokenToVerify);
-    const newAccessToken = authService.generateAccessToken(userDoc._id);
-    const newRefreshToken = authService.generateRefreshToken(userDoc._id);
+    const newAccessToken = authService.generateAccessToken(userDoc);
+    const newRefreshToken = authService.generateRefreshToken(userDoc);
     setRefreshTokenCookie(res, newRefreshToken);
 
     const userPayload = {
@@ -149,14 +149,27 @@ const verify2FA = async (req, res) => {
 const refreshToken = async (req, res) => {
   const token = req.cookies?.refreshToken || req.body?.refreshToken;
   const result = await authService.refreshToken(token);
+  setRefreshTokenCookie(res, result.refreshToken);
   res.status(200).json({
     success: true,
-    token: result.accessToken
+    token: result.accessToken,
+    refreshToken: result.refreshToken,
+    user: result.user
   });
 };
 
 const getMe = async (req, res) => {
-  const user = await authService.getMe(req.user.id);
+  let user = await authService.getMe(req.user.id);
+  if (!user && req.user) {
+    user = {
+      id: req.user._id || req.user.id,
+      name: req.user.name,
+      email: req.user.email,
+      role: req.user.role,
+      status: req.user.status || 'active',
+      createdAt: req.user.createdAt || new Date()
+    };
+  }
   res.status(200).json({
     success: true,
     user

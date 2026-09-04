@@ -3,7 +3,7 @@ import { GoogleLogin } from '@react-oauth/google';
 import { useNavigate, useLocation } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
-import api, { setAccessToken } from '../services/api';
+import api, { setAccessToken, setRefreshToken } from '../services/api';
 
 export default function SocialLoginButtons({ onLoginSuccess }) {
   const { checkLoggedIn } = useAuth();
@@ -27,6 +27,7 @@ export default function SocialLoginButtons({ onLoginSuccess }) {
       }
 
       const token = res.data?.data?.accessToken || res.data?.token;
+      const refreshTokenVal = res.data?.data?.refreshToken || res.data?.refreshToken;
       const user = res.data?.data?.user || res.data?.user;
 
       if (!token) {
@@ -35,6 +36,10 @@ export default function SocialLoginButtons({ onLoginSuccess }) {
       }
 
       setAccessToken(token);
+      if (refreshTokenVal) setRefreshToken(refreshTokenVal);
+      if (user) {
+        localStorage.setItem('atomic_ops_user', JSON.stringify(user));
+      }
       await checkLoggedIn();
 
       toast.success(`Logged in with Google! Welcome ${user?.name || 'Attendee'}`);

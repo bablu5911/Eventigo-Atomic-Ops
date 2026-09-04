@@ -21,6 +21,7 @@ const promoCodeRoutes = require('./routes/promoCodeRoutes');
 const reviewRoutes = require('./routes/reviewRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes');
 const adminRoutes = require('./routes/adminRoutes');
+const superadminRoutes = require('./routes/superadminRoutes');
 const chatRoutes = require('./routes/chatRoutes');
 
 const app = express();
@@ -100,6 +101,7 @@ app.use('/api', promoCodeRoutes);
 app.use('/api', reviewRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/superadmin', superadminRoutes);
 app.use('/api/chat', chatRoutes);
 
 // Central Error Handler

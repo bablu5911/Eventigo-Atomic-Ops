@@ -30,12 +30,20 @@ const getOrganizers = async (req, res) => {
 const createUser = async (req, res) => {
   const { name, email, password, role } = req.body;
 
+  if (role === 'superadmin' && req.user?.role !== 'superadmin') {
+    throw new ApiError(403, 'Permission Denied: Admins cannot create Super Admin accounts.');
+  }
+
   const existing = await User.findOne({ email });
   if (existing) {
     throw new ApiError(400, 'User with this email already exists');
   }
 
-  const validRole = ['attendee', 'organizer', 'staff', 'admin', 'superadmin'].includes(role) ? role : 'attendee';
+  const validRole = ['attendee', 'organizer', 'staff', 'admin'].includes(role)
+    ? role
+    : req.user?.role === 'superadmin' && role === 'superadmin'
+    ? 'superadmin'
+    : 'attendee';
 
   const user = await User.create({
     name,
@@ -66,15 +74,29 @@ const updateUserStatus = async (req, res) => {
     throw new ApiError(400, 'Invalid status value');
   }
 
-  const user = await User.findByIdAndUpdate(id, { status }, { new: true }).select('-password');
-  if (!user) {
+  const targetUser = await User.findById(id);
+  if (!targetUser) {
     throw new ApiError(404, 'User not found');
   }
 
+  // Admin CANNOT edit position or status of Super Admin
+  if (targetUser.role === 'superadmin' && req.user?.role !== 'superadmin') {
+    throw new ApiError(403, 'Permission Denied: Admins cannot edit or change the status of a Super Admin.');
+  }
+
+  targetUser.status = status;
+  await targetUser.save();
+
   res.status(200).json({
     success: true,
-    message: `Account status updated to '${status}'`,
-    user
+    message: `Account status for ${targetUser.name} updated to '${status}'`,
+    user: {
+      id: targetUser._id,
+      name: targetUser.name,
+      email: targetUser.email,
+      role: targetUser.role,
+      status: targetUser.status
+    }
   });
 };
 
@@ -86,15 +108,57 @@ const updateUserRole = async (req, res) => {
     throw new ApiError(400, 'Invalid role value');
   }
 
-  const user = await User.findByIdAndUpdate(id, { role }, { new: true }).select('-password');
-  if (!user) {
+  const targetUser = await User.findById(id);
+  if (!targetUser) {
     throw new ApiError(404, 'User not found');
   }
 
+  // Admin CANNOT edit position of Super Admin
+  if (targetUser.role === 'superadmin' && req.user?.role !== 'superadmin') {
+    throw new ApiError(403, 'Permission Denied: Admins cannot edit or change the position/role of a Super Admin.');
+  }
+
+  // Admin CANNOT promote anyone to Super Admin
+  if (role === 'superadmin' && req.user?.role !== 'superadmin') {
+    throw new ApiError(403, 'Permission Denied: Only Super Admins can assign or promote users to Super Admin.');
+  }
+
+  targetUser.role = role;
+  await targetUser.save();
+
   res.status(200).json({
     success: true,
-    message: `User role updated to '${role}'`,
-    user
+    message: `User ${targetUser.name}'s role updated to '${role}'`,
+    user: {
+      id: targetUser._id,
+      name: targetUser.name,
+      email: targetUser.email,
+      role: targetUser.role,
+      status: targetUser.status
+    }
+  });
+};
+
+const deleteUser = async (req, res) => {
+  const { id } = req.params;
+  const targetUser = await User.findById(id);
+  if (!targetUser) {
+    throw new ApiError(404, 'User not found');
+  }
+
+  if (targetUser.role === 'superadmin') {
+    throw new ApiError(403, 'Permission Denied: Super Admin accounts cannot be deleted.');
+  }
+
+  if (targetUser.role === 'admin' && req.user?.role !== 'superadmin') {
+    throw new ApiError(403, 'Permission Denied: Only Super Admins can remove Admin accounts.');
+  }
+
+  await User.findByIdAndDelete(id);
+
+  res.status(200).json({
+    success: true,
+    message: `User account '${targetUser.name}' (${targetUser.role}) successfully deleted.`
   });
 };
 
@@ -211,5 +275,6 @@ module.exports = {
   getStaffAssignments,
   createStaffAssignment,
   deleteStaffAssignment,
-  assignOrganizerToEvent
+  assignOrganizerToEvent,
+  deleteUser
 };

@@ -281,6 +281,11 @@ export default function AdminDashboard() {
   };
 
   const handleUpdateStatus = async (userId, newStatus) => {
+    const target = usersList.find(u => u._id === userId);
+    if (target?.role === 'superadmin') {
+      toast.error('Forbidden: Super Admin status cannot be altered by Admin.');
+      return;
+    }
     try {
       const res = await api.patch(`/admin/users/${userId}/status`, { status: newStatus });
       if (res.data.success) {
@@ -293,6 +298,15 @@ export default function AdminDashboard() {
   };
 
   const handleUpdateRole = async (userId, newRole) => {
+    const target = usersList.find(u => u._id === userId);
+    if (target?.role === 'superadmin') {
+      toast.error('Forbidden: Super Admin position is strictly protected and immutable.');
+      return;
+    }
+    if (newRole === 'superadmin') {
+      toast.error('Forbidden: Regular Admin cannot elevate any user to Super Admin.');
+      return;
+    }
     try {
       const res = await api.patch(`/admin/users/${userId}/role`, { role: newRole });
       if (res.data.success) {
@@ -945,38 +959,58 @@ export default function AdminDashboard() {
                           <div className="text-[10px] font-mono text-brand-dark/50">{usr.email}</div>
                         </td>
                         <td className="py-4 px-4">
-                          <select
-                            value={usr.role}
-                            onChange={(e) => handleUpdateRole(usr._id, e.target.value)}
-                            className="bg-brand-cream border border-brand-dark/15 rounded-xl px-2.5 py-1 text-xs font-mono font-bold uppercase text-brand-dark"
-                          >
-                            <option value="attendee">Attendee</option>
-                            <option value="organizer">Organizer</option>
-                            <option value="staff">Staff</option>
-                            <option value="admin">Admin</option>
-                            <option value="superadmin">Super Admin</option>
-                          </select>
+                          {usr.role === 'superadmin' ? (
+                            <div className="inline-flex items-center space-x-1.5 px-3 py-1 bg-amber-500/10 border border-amber-500/30 text-amber-900 rounded-xl text-xs font-mono font-bold tracking-tight">
+                              <Shield className="w-3.5 h-3.5 text-amber-600" />
+                              <span>👑 Super Admin (Protected)</span>
+                            </div>
+                          ) : (
+                            <select
+                              value={usr.role}
+                              onChange={(e) => handleUpdateRole(usr._id, e.target.value)}
+                              className="bg-brand-cream border border-brand-dark/15 rounded-xl px-2.5 py-1 text-xs font-mono font-bold uppercase text-brand-dark"
+                            >
+                              <option value="attendee">Attendee</option>
+                              <option value="organizer">Organizer</option>
+                              <option value="staff">Staff</option>
+                              <option value="admin">Admin</option>
+                            </select>
+                          )}
                         </td>
                         <td className="py-4 px-4">
-                          <select
-                            value={usr.status}
-                            onChange={(e) => handleUpdateStatus(usr._id, e.target.value)}
-                            className={`rounded-xl px-2.5 py-1 text-xs font-mono font-bold uppercase border ${
-                              usr.status === 'active'
-                                ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
-                                : 'bg-rose-50 text-rose-800 border-rose-200'
-                            }`}
-                          >
-                            <option value="active">Active</option>
-                            <option value="suspended">Suspended</option>
-                            <option value="on_hold">On Hold</option>
-                          </select>
+                          {usr.role === 'superadmin' ? (
+                            <div className="inline-flex items-center space-x-1 px-3 py-1 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-xl text-xs font-mono font-bold">
+                              <Lock className="w-3 h-3 text-emerald-600" />
+                              <span>Active (Immutable)</span>
+                            </div>
+                          ) : (
+                            <select
+                              value={usr.status}
+                              onChange={(e) => handleUpdateStatus(usr._id, e.target.value)}
+                              className={`rounded-xl px-2.5 py-1 text-xs font-mono font-bold uppercase border ${
+                                usr.status === 'active'
+                                  ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                                  : 'bg-rose-50 text-rose-800 border-rose-200'
+                              }`}
+                            >
+                              <option value="active">Active</option>
+                              <option value="suspended">Suspended</option>
+                              <option value="on_hold">On Hold</option>
+                            </select>
+                          )}
                         </td>
                         <td className="py-4 px-4 text-brand-dark/50 text-[10px]">
                           {new Date(usr.createdAt).toLocaleDateString()}
                         </td>
                         <td className="py-4 px-4 text-right">
-                          <span className="text-[10px] text-brand-dark/40 font-mono">Live</span>
+                          {usr.role === 'superadmin' ? (
+                            <span className="text-[10px] text-amber-700 font-mono font-semibold flex items-center justify-end space-x-1">
+                              <Lock className="w-3 h-3 text-amber-600" />
+                              <span>Protected</span>
+                            </span>
+                          ) : (
+                            <span className="text-[10px] text-brand-dark/40 font-mono">Live</span>
+                          )}
                         </td>
                       </tr>
                     ))}

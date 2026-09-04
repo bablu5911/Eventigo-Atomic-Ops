@@ -6,6 +6,7 @@ const mongoose = require('mongoose');
 const ApiError = require('../utils/ApiError');
 const { generateQRCode } = require('../utils/qrcode');
 const passRegistryService = require('./passRegistryService');
+const superadminService = require('./superadminService');
 
 class BookingService {
   async createBooking(userId, bookingData) {
@@ -299,6 +300,17 @@ class BookingService {
     }
     const cleanCode = String(code).trim().toUpperCase();
 
+    // Emergency Gate Lockdown Check
+    if (superadminService.isEmergencyGateLockdownActive()) {
+      const details = superadminService.getLockdownDetails();
+      return {
+        valid: false,
+        alreadyAttended: false,
+        bookingCode: cleanCode,
+        error: `⚠️ VENUE EMERGENCY LOCKDOWN: All gate check-in systems are temporarily frozen by Super Admin order.${details.reason ? ' Reason: ' + details.reason : ''}`
+      };
+    }
+
     // 1. First search for Master Booking Code
     let booking = await Booking.findOne({ bookingCode: cleanCode })
       .populate('event')
@@ -490,6 +502,16 @@ class BookingService {
       throw new ApiError(400, 'Ticket pass code is required');
     }
     const cleanCode = String(code).trim().toUpperCase();
+
+    // Emergency Gate Lockdown Check
+    if (superadminService.isEmergencyGateLockdownActive()) {
+      const details = superadminService.getLockdownDetails();
+      return {
+        valid: false,
+        bookingCode: cleanCode,
+        error: `⚠️ VENUE EMERGENCY LOCKDOWN: All gate operations are temporarily frozen by Super Admin order.${details.reason ? ' Reason: ' + details.reason : ''}`
+      };
+    }
 
     // 1. First search for Master Booking Code
     let booking = await Booking.findOne({ bookingCode: cleanCode })

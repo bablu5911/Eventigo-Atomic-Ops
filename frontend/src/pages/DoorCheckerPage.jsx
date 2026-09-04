@@ -37,10 +37,25 @@ export default function DoorCheckerPage() {
   const [admitAll, setAdmitAll] = useState(true);
   const [exitCount, setExitCount] = useState(1);
   const [minutesEarly, setMinutesEarly] = useState(25);
+  const [gateLockdown, setGateLockdown] = useState({ active: false, reason: '' });
 
   useEffect(() => {
     fetchEvents();
+    fetchGateStatus();
+    const timer = setInterval(fetchGateStatus, 8000);
+    return () => clearInterval(timer);
   }, []);
+
+  const fetchGateStatus = async () => {
+    try {
+      const res = await api.get('/bookings/gate-status');
+      if (res.data?.success && res.data.lockdown) {
+        setGateLockdown(res.data.lockdown);
+      }
+    } catch (err) {
+      // ignore
+    }
+  };
 
   const fetchEvents = async () => {
     try {
@@ -162,7 +177,30 @@ export default function DoorCheckerPage() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-10 py-10 px-6 font-helvetica-neue">
-      {/* Header */}
+      {/* Emergency Gate Lockdown Warning Banner */}
+      {gateLockdown.active && (
+        <div className="p-5 bg-rose-600 text-white rounded-3xl shadow-xl border-2 border-rose-500/50 flex flex-col sm:flex-row sm:items-center justify-between gap-4 animate-pulse">
+          <div className="flex items-center space-x-3">
+            <div className="p-2.5 bg-rose-700/80 rounded-2xl">
+              <AlertTriangle className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <div className="font-black text-sm uppercase tracking-wide flex items-center space-x-2">
+                <span>⚠️ EMERGENCY VENUE GATE LOCKDOWN IN EFFECT</span>
+              </div>
+              <div className="text-xs text-rose-100 font-mono mt-0.5">
+                {gateLockdown.reason || 'All gate admissions frozen by Super Admin security order.'} Turnstiles and scanners will reject all admissions.
+              </div>
+            </div>
+          </div>
+          <button
+            onClick={fetchGateStatus}
+            className="px-4 py-2 bg-white text-rose-700 font-bold text-xs rounded-full hover:bg-rose-50 transition-colors uppercase font-mono tracking-wider shadow-sm self-start sm:self-auto"
+          >
+            Check Status
+          </button>
+        </div>
+      )}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between border-b border-brand-dark/10 pb-6 gap-4">
         <div>
           <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-brand-green/10 text-brand-green text-xs font-mono font-bold uppercase mb-2">

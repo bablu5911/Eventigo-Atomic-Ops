@@ -11,6 +11,7 @@ router.get('/users', catchAsync(adminController.getAllUsers));
 router.post('/users', catchAsync(adminController.createUser));
 router.patch('/users/:id/status', catchAsync(adminController.updateUserStatus));
 router.patch('/users/:id/role', catchAsync(adminController.updateUserRole));
+router.delete('/users/:id', catchAsync(adminController.deleteUser));
 
 // Staff & Organizer Management
 router.get('/staff', catchAsync(adminController.getStaffMembers));

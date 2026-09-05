@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /superadmin
+Disallow: /admin
+Disallow: /door-checker
+Disallow: /door-scanner
+Disallow: /api/
+
+Sitemap: https://eventigo-mu.vercel.app/sitemap.xml
